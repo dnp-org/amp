@@ -1,0 +1,296 @@
+-- ===================================================================
+-- AMP abstract syntax
+-- ===================================================================
+-- For now, I've reserved an OID in the Vlinder Software namespace (as our second security protocol after SIT). This should move to an IEEE namespace (1.3.111.2.1815.1.1), but the reservation will have to stand.
+AuthorizationManagementProtocol { iso(1) org(3) dod(6) internet(1) private(4) enterprise(1) vlinder-software(49974) security(0) protocols(0) authorization-management-protocol(1) }
+
+-- Definitions are organized into sections: The first section is the one thing we expect (in this
+-- case, the AMP PDU)
+-- Definitions within each section appear in alphabetical order
+DEFINITIONS ::= BEGIN
+	EXPORTS AMPPDU;
+	
+	-- ===================================================================
+	-- the principal type
+	-- ===================================================================
+	AMPPDU ::= SEQUENCE {
+		version												Version DEFAULT v20200320,
+		sequenceNumber										INTEGER DEFAULT 0,
+		payload												AMPPDUPayload,
+		signature											Signature OPTIONAL -- is there any reason for any message to not be signed? If not, remove the optional
+	}
+	
+	-- ===================================================================
+	-- types
+	-- ===================================================================
+	-- -------------------------------------------------------------------
+	-- structural types
+	-- -------------------------------------------------------------------
+	-- the PDU payload: a top-level choice item
+	AMPPDUPayload ::= CHOICE {
+		authorityMessage				[0]					AuthorityMessage,	-- messages initiated by the Authority
+		deviceMessage					[1]					DeviceMessage		-- messages initiated by a Device
+	}
+	
+	AuthorityMessage ::= CHOICE {
+		associationAuthorizationStatus	[0]		IMPLICIT	AssociationAuthorizationStatus,
+		deviceRevocation				[1]		IMPLICIT	DeviceRevocation,
+		deviceStatus					[2]		IMPLICIT	DeviceStatus,
+		deviceVerificationResponse		[3]		IMPLICIT	DeviceVerificationResponse,
+		routingTableRequest				[4]		IMPLICIT	RoutingTableRequest,
+		routingTableStatusRequest		[5]		IMPLICIT	RoutingTableStatusRequest,
+		routingTableConfirmation		[6]		IMPLICIT	RoutingTableConfirmation,
+		routingTableUpdateConfirmation	[7]		IMPLICIT	RoutingTableUpdateConfirmation,
+		deviceCertificateRequest		[8]		IMPLICIT	DeviceCertificateRequest,
+		deviceCertificate				[9]		IMPLICIT	DeviceCertificate
+	}
+	
+	DeviceMessage ::= CHOICE {
+		associationAuthorizationRequest	[0]		IMPLICIT	AssociationAuthorizationRequest,
+		deviceVerificationRequest		[1]		IMPLICIT	DeviceVerificationRequest,
+		routingTable					[2]		IMPLICIT	RoutingTable,
+		routingTableRequest				[3]		IMPLICIT	RoutingTableRequest,
+		routingTableStatus				[4]		IMPLICIT	RoutingTableStatus,
+		routingTableStatusRequest		[5]		IMPLICIT	RoutingTableStatusRequest,
+		routingTableUpdate				[6]		IMPLICIT	RoutingTableUpdate,
+		routingTableConfirmation		[7]		IMPLICIT	RoutingTableConfirmation,
+		routingTableUpdateConfirmation	[8]		IMPLICIT	RoutingTableUpdateConfirmation,
+		deviceCertificateRequest		[9]		IMPLICIT	DeviceCertificateRequest,
+		deviceCertificate				[10]	IMPLICIT	DeviceCertificate
+	}
+	
+	-- -------------------------------------------------------------------
+	-- service request types
+	-- -------------------------------------------------------------------
+	-- Sent by a Device to an Authority to request authorization to communicate on a MOA
+	-- The Authority SHALL respond with an AssociationAuthorizationStatus unless the device making
+	-- the request has been revoked or the signature on the message does not verify
+	-- The Master shall initiate this request if either:
+	-- - its policies require it to do so, or
+	-- - it receives an AssociationAuthorizationRequest from the Outstation at the other 
+	--   end of the MOA and cannot present a valid AssociationAuthorization.
+	AssociationAuthorizationRequest ::= SEQUENCE {
+		associationName								AssociationName
+	}
+	
+	-- Sent by the Authority in response to an AssociationAuthorizationRequest or a 
+	-- DeviceVerificationRequest from a device, about a device that it is not authorized to 
+	-- communicate with.
+	-- Effectively, the Master can request the authorization and receive it from the 
+	-- Authority. The Master can then forward the authorization to the Outstation, 
+	-- should it be interested in knowing that they're allowed to talk.
+	AssociationAuthorizationStatus ::= SEQUENCE {
+		associationName								AssociationName,
+		authorization								AssociationAuthorization
+	}
+	
+	-- Sent by an Authority or a device to convey a device certificate
+	DeviceCertificate ::= SEQUENCE {
+		certificate									OCTET STRING
+	}
+	
+	-- Sent by an Authority or a device to obtain its certificate
+	DeviceCertificateRequest ::= SEQUENCE {
+		-- no payload
+	}
+	
+	-- Broadcast by the Authority to all devices to let them know a device has
+	-- been revoked for some reason
+	DeviceRevocation ::= SEQUENCE {
+		deviceName									UTF8String,
+		reason										RevocationReason,
+		reasonString								UTF8String OPTIONAL
+	}
+	
+	-- Sent by the Authority to indicate the status of a device, unsolicited
+	DeviceStatus ::= SEQUENCE {
+		deviceName									UTF8String, -- subject from certificate
+		status										SET OF DeviceVerificationStatus
+	}
+	
+	-- Sent by the Authority in response to a DeviceVerificationRequest
+	DeviceVerificationResponse ::= DeviceStatus
+	
+	-- Sent by a device to request verification of another device. 
+	-- Possible responses include:
+	-- - unknown certificate
+	--   Authority sends a DeviceVerificationResponse with a unknown-certificate status
+	--   mutually exclusive with all other status bits
+	-- - "you are not authorized to talk to this device"
+	--   Authority sends an AssociationAuthorizationResponse and MAY send 
+	--   DeviceVerificationResponse
+	-- - verified
+	--   Authority sends a DeviceVerificationResponse with a verified status
+	--   may be combined with revoked for a valid cert of a revoked device
+	-- - revoked
+	--   Authority sends a DeviceVerificationResponse with a revoked status
+	--   may be combined with verified or verification-failed. Indicates the device has been 
+	--   revoked and should therefore not be communicated with
+	-- - verification-failed
+	--   may be combined with revoked for an invalid cert purported to be from a revoked device
+	DeviceVerificationRequest ::= SEQUENCE {
+		-- Certificate of the device for which verification is being requested. This is the same 
+		-- certificate as used during the SAv6 enrolment handshake
+		deviceCertificate							OCTET STRING
+	}
+	
+	-- Sent by devices in response to a RoutingTableRequest to convey the entire routing table.
+	-- The routing table may exceed the size of an AMP PDU (which has to fit in an SPDU, which 
+	-- maybe as small as 254 bytes), so it may be sent in several "chunks" with the "moreFollows"
+	-- bit set on each but the last PDU.
+	-- The table version starts at 0 and is incremented every time an entry is added to, or removed
+	-- from, the device's table. Thus, other devices can verify whether the table has changed by 
+	-- reading the table version (conveyed in the RoutingTableStatus message).
+	-- Entries in the table have no particular order.
+	RoutingTable ::= SEQUENCE {
+		tableVersion								INTEGER,
+		routingTable								SET OF RoutingTableEntry,
+		moreFollows									BOOLEAN DEFAULT FALSE 	-- in case the routing 
+																			-- table exceeds to
+																			-- maximum size of an
+																			-- AMP PDU
+	}
+	
+	-- Sent by a device or an Authority to acknowledge receipt of part of the routing table, so the 
+	-- next message can be sent by the device.
+	RoutingTableConfirmation ::= SEQUENCE {
+		sequenceNumber								INTEGER
+	}
+	
+	-- Request to read the routing table. If the entire table is read (operation == read) the 
+	-- tableVersion field shall not be included in the message. If an update is requested, the 
+	-- tableVersion shall be set to the last version obtained by the requesting device. In the
+	-- former case, the response shall be a RoutingTable. In the latter case, it shall be:
+	-- - if the version is still the same, a RoutingTableStatus message with the current version
+	-- - if entries have been added but no entries have been removed, a RoutingTableUpdate
+	--   message (or a series of RoutingTableUpdate messages) listing the entries that have been 
+	--   added
+	-- - if entries have been removed but no entries have been added, a RoutingTableUpdate
+	--   message (or a series of RoutingTableUpdate messages) listing the entries that have been 
+	--   removed
+	-- - if entries have been removed and entries have been added, at least two RoutingTableUpdate
+	--   messages, one listing the entries that have been removed and one listing the entries that
+	--   have been added. Added and removed entries may be conveyed in any order. If there are more
+	--   additions and/or removals than can fit in a single messages there will be more than two 
+	--   messages in the response.
+	RoutingTableRequest ::= SEQUENCE {
+		operation									RoutingTableRequestOperation,
+		tableVersion								INTEGER OPTIONAL
+	}
+	
+	-- Sent by a device to indicate the current status (i.e. version) of the routing table
+	-- Note that this version drops to 0 on device restart. The DNP3 Application Layer receives
+	-- a separate indication of device restart in an IIN, which should be forwarded to AMP. If 
+	-- a remote device restarts, the local version of their routing table should be set to 0.
+	-- A routing table with version number 0 shall always be empty.
+	RoutingTableStatus ::= SEQUENCE {
+		tableVersion								INTEGER
+	}
+	
+	-- Sent by a device or the Authority to request the current status (i.e. version) of the riytubg 
+	-- table. Has no payload.
+	RoutingTableStatusRequest ::= SEQUENCE {
+		-- no payload for this one
+	}
+	
+	-- Update for the routing table. May be used (by a device) to indicate that entries 
+	-- have been added or removed from the routing table. A single message can only contain 
+	-- additions xor removals (not both). The tableVersion in the message shall indicate the 
+	-- current version of the table. The moreFollows field shall be present and set to true
+	-- if any more messages are needed to convey the additions & removals from the table.
+	-- If sent in response to a RoutingTableRequest and a device has both been added and removed
+	-- from the table between the version in the request and the version in the response, both
+	-- events shall be reported in order (such as to prevent the ABA problem).
+	RoutingTableUpdate ::= SEQUENCE {
+		operation									RoutingTableUpdateOperation,
+		entries										SET OF RoutingTableEntry,
+		tableVersion								INTEGER,
+		moreFollows									BOOLEAN DEFAULT FALSE
+	}
+	
+	-- Sent by a device or an Authority to acknowledge receipt of an update, so the next message can 
+	-- be sent by the device.
+	RoutingTableUpdateConfirmation ::= SEQUENCE {
+		sequenceNumber								INTEGER
+	}
+	
+	-- ===================================================================
+	-- supporting types
+	-- ===================================================================
+	AssocationName ::= SEQUENCE {
+		masterName									UTF8String,
+		outstationName								UTF8String,
+		aid											INTEGER OPTIONAL,
+		all											BOOLEAN OPTIONAL
+	}
+	
+	RoutingTableEntry ::= SEQUENCE {
+		commonName									UTF8String,
+		trusted										BOOLEAN,		-- certificate was verified - the device is authentic
+		trustedSource								BOOLEAN			-- certificate of the device that reported this entry to us (and every device in between) is verified
+	}
+	
+	-- ===================================================================
+	-- enumerations
+	-- ===================================================================
+	AssociationAuthorization ::= INTEGER {
+		other(0),			-- some status other than the following. Should not be used except as a
+							-- place-holder. Shall not be sent over the wire.
+							-- /rlc: I think I like the unknown(999) better as place-holders
+		authorized(1),		-- the association is authorized to exist
+		unauthorized(2),	-- the association is not authorized to exist, but also not explicitly
+							-- denied. Whether devices are permitted to communicate is a local 
+							-- policy matter.
+		revoked(3),			-- the association has previously been authorized to exist but has since
+							-- been revoked. Devices shall not communicate
+		denied(4),			-- the association is not authorized. Devices shall not communicate
+		unknown(999)		-- unknown. Shall not be sent over the wire.
+	}
+	
+	DeviceVerificationStatus ::= INTEGER {
+		other(0),				-- some status other than the following. Should not be used except 
+								-- as a place-holder. Shall not be sent over the wire
+								-- /rlc: I think I like the unknown(999) better as place-holders
+		unknown-certificate(1),	-- The Authority was presented with an unknown certificate. The 
+								-- device is therefore unauthenticated. Whether communication with
+								-- the device is permitted is a local policy matter.
+		verified(2),			-- The device is authentic.
+		revoked(3),				-- The device is revoked: no communication with it is permitted.
+		verification-failed(4),	-- Verification of the presented certificate failed. The device is 
+								-- unauthenticated. Whether communication with the device is 
+								-- permitted is a local policy matter
+		unknown(999)			-- unknown. Shall not be sent over the wire
+	}
+	
+	RevocationReason ::= INTEGER {
+		other(0),					-- The device was revoked for some reason other than one of the 
+									-- enumerated ones. The reason shall be specified in the 
+									-- reasonString field of the revocation message.
+									-- /rlc: unlike the other "other"s, this one makes sense
+		device-decommissioned(1),	-- The device was decommissioned and should not longer be part 
+									-- of the system. Devices shall no longer communicate with it. 
+									-- It may be re-instated later.
+		device-compromised(2),		-- The device was compromised and shall be removed from the 
+									-- system. Devices shall no longer communicate with it.
+		unspecified(3),				-- Reason for revocation is not specified.
+		unknown(999)				-- unknown. Shall not be sent over the wire
+	}
+	
+	RoutingTableUpdateOperation ::= INTEGER {
+		add(1),			-- devices listed in the message are added to the table
+		remove(2),		-- devices listed in the message are removed from the table
+		modify(3)		-- devices listed in the message have changed state (e.g. trust or trustedSource state changed)
+	}
+	RoutingTableRequestOperation ::= INTEGER {
+		read(1),		-- request is to read the entire table
+		update(2)		-- request is to obtain updates to the table since the given version
+	}
+	
+	-- unofficial versions are denoted with datecodes. This leaves official
+	-- versions with over 20,000,000 possible versions before there is a 
+	-- possibility of collision, and clearly shows the difference between
+	-- official and unofficial versions.
+	Version ::= INTEGER { v20200320(20200320) }
+	
+END
+
