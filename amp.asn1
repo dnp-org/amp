@@ -14,7 +14,7 @@ DEFINITIONS ::= BEGIN
 	-- the principal type
 	-- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version												Version DEFAULT v20200513,
+		version												Version DEFAULT v20200522,
 		sequenceNumber										INTEGER DEFAULT 0,
 		targetCommonName									CommonName OPTIONAL,		-- if absent, the message targets the Authority.
 																						-- If present, the message SHALL be signed by the Authority
@@ -94,7 +94,7 @@ DEFINITIONS ::= BEGIN
 	AssociationAuthorizationStatus ::= SEQUENCE {
 		associationName								AssociationName,
 		authorization								AssociationAuthorization,
-		associationAttributes						Certificate
+		associationAttributes						Certificate OPTIONAL
 	}
 	
 	CACertificate ::= SEQUENCE {
@@ -467,7 +467,7 @@ DistinguishedName
 	-- versions with over 20,000,000 possible versions before there is a 
 	-- possibility of collision, and clearly shows the difference between
 	-- official and unofficial versions.
-	Version ::= INTEGER { v20200518(20200518) }
+	Version ::= INTEGER { v20200522(20200522) }
 	
 END
 
