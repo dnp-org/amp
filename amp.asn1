@@ -65,7 +65,8 @@ DEFINITIONS ::= BEGIN
 		deviceCertificate				[10]	IMPLICIT	DeviceCertificate,
 		challenge						[11]	IMPLICIT	Challenge,
 		challengeResponse				[12]	IMPLICIT	ChallengeResponse,
-		caCertificateChainRequest		[13]	IMPLICIT	CACertificateChainRequest
+		caCertificateChainRequest		[13]	IMPLICIT	CACertificateChainRequest,
+		deliveryNotification			[14]	IMPLICIT	DeliveryNotification
 	}
 	
 	-- -------------------------------------------------------------------
@@ -111,6 +112,13 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	ChallengeResponse ::= Challenge
+	
+	DeliveryStatusNotification ::= SEQUENCE {
+		status										DeliveryStatus,
+		reason										UTF8String OPTIONAL,
+		messageType									MessageType,
+		hash										Hash
+	}
 	
 	-- Sent by an Authority or a device to convey a device certificate
 	DeviceCertificate ::= SEQUENCE {
@@ -360,6 +368,13 @@ DEFINITIONS ::= BEGIN
 		other(0),
 		recurring(1),
 		never(2)
+	}
+	
+	DeliveryStatus ::= INTEGER {
+		other(0),
+		success(1),
+		persistent-transient-failure(2),
+		permanent-failure(3)
 	}
 	
 	DeviceVerificationStatus ::= INTEGER {
