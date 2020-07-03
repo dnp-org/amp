@@ -14,11 +14,10 @@ DEFINITIONS ::= BEGIN
 	-- the principal type
 	-- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version												Version DEFAULT v20200530,
+		version												Version DEFAULT v20200513,
 		sequenceNumber										INTEGER DEFAULT 0,
 		targetCommonName									CommonName OPTIONAL,		-- if absent, the message targets the Authority.
 																						-- If present, the message SHALL be signed by the Authority
-		flags												BIT STRING,					-- bits are defined in AMPPDUFlags
 		payload												AMPPDUPayload,
 		signature											Signature
 	}
@@ -32,7 +31,7 @@ DEFINITIONS ::= BEGIN
 	-- the PDU payload: a top-level choice item
 	AMPPDUPayload ::= CHOICE {
 		authorityMessage				[0]					AuthorityMessage,	-- messages initiated by the Authority
-		deviceMessage					[1]					DeviceMessage	-- messages initiated by a Device
+		deviceMessage					[1]					DeviceMessage		-- messages initiated by a Device
 	}
 	
 	AuthorityMessage ::= CHOICE {
@@ -66,8 +65,7 @@ DEFINITIONS ::= BEGIN
 		deviceCertificate				[10]	IMPLICIT	DeviceCertificate,
 		challenge						[11]	IMPLICIT	Challenge,
 		challengeResponse				[12]	IMPLICIT	ChallengeResponse,
-		caCertificateChainRequest		[13]	IMPLICIT	CACertificateChainRequest,
-		deliveryNotification			[14]	IMPLICIT	DeliveryNotification
+		caCertificateChainRequest		[13]	IMPLICIT	CACertificateChainRequest
 	}
 	
 	-- -------------------------------------------------------------------
@@ -95,7 +93,7 @@ DEFINITIONS ::= BEGIN
 	AssociationAuthorizationStatus ::= SEQUENCE {
 		associationName								AssociationName,
 		authorization								AssociationAuthorization,
-		associationAttributes						Certificate OPTIONAL
+		associationAttributes						Certificate
 	}
 	
 	CACertificate ::= SEQUENCE {
@@ -113,13 +111,6 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	ChallengeResponse ::= Challenge
-	
-	DeliveryStatusNotification ::= SEQUENCE {
-		status										DeliveryStatus,
-		reason										UTF8String OPTIONAL,
-		messageType									MessageType,
-		hash										Hash
-	}
 	
 	-- Sent by an Authority or a device to convey a device certificate
 	DeviceCertificate ::= SEQUENCE {
@@ -195,7 +186,7 @@ DEFINITIONS ::= BEGIN
 	
 	RoutingConfiguration ::= SEQUENCE {
 		routingTableUpdatePeriod					INTEGER,			-- number of seconds between updates
-		routingTableEntryTTL						INTEGER				-- Number of seconds the entry should be kept in the table (should typically be longer than the time between updates)
+		routingTableEntryTTL						INTEGER,			-- Number of seconds the entry should be kept in the table (should typically be longer than the time between updates)
 	}
 	
 	-- Sent by devices in response to a RoutingTableRequest to convey the entire routing table.
@@ -341,28 +332,16 @@ DEFINITIONS ::= BEGIN
 																		-- for the duration of validity of the certificate
 																		-- required if requestAuthentication is recurring(2)
 	}
-	
-	UnauthorizedAssociationPolicy ::= SEQUENCE {
-		mayCommunicate								INTEGER,			-- Non-negative. Indicates whether a device can communicate over an unauthorized MOA,
-																		-- may be positive infinity. If zero, no communication is permitted
-		requestAuthorization						AuthorizationRequestPolicy,	-- Indicates when a device should ask for authorization of a MOA
-		requestAuthorizationInterval				INTEGER OPTIONAL	-- Non-negative. If authorization requests are recurring, indicates the interval at 
-																		-- which the device should ask, in seconds. Device will only ask if not authorized
-	}
+	UnauthorizedAssociationPolicy
 
 	-- ===================================================================
 	-- enumerations
 	-- ===================================================================
-	AMPPDUFlags ::= INTEGER {
-		other(0),
-		confirmation-needed(1)
-	}
-	
 	AssociationAuthorization ::= INTEGER {
 		other(0),			-- some status other than the following / unknown. Should not be used except as a
 							-- place-holder. Shall not be sent over the wire.
 		authorized(1),		-- the association is authorized to exist
-		unauthorized(2),		-- the association is not authorized to exist, but also not explicitly
+		unauthorized(2),	-- the association is not authorized to exist, but also not explicitly
 							-- denied. Whether devices are permitted to communicate is a local 
 							-- policy matter.
 		revoked(3),			-- the association has previously been authorized to exist but has since
@@ -383,27 +362,13 @@ DEFINITIONS ::= BEGIN
 		never(2)
 	}
 	
-	AuthorizationRequestPolicy ::= INTEGER {
-		other(0),
-		at-creation(1),
-		recurring(2),
-		never(3)
-	}
-	
-	DeliveryStatus ::= INTEGER {
-		other(0),
-		success(1),
-		persistent-transient-failure(2),
-		permanent-failure(3)
-	}
-	
 	DeviceVerificationStatus ::= INTEGER {
 		other(0),				-- some status other than the following. Should not be used except 
 								-- as a place-holder. Shall not be sent over the wire
 		unknown-certificate(1),	-- The Authority was presented with an unknown certificate. The 
 								-- device is therefore unauthenticated. Whether communication with
 								-- the device is permitted is a local policy matter.
-		verified(2),				-- The device is authentic.
+		verified(2),			-- The device is authentic.
 		revoked(3),				-- The device is revoked: no communication with it is permitted.
 		verification-failed(4)	-- Verification of the presented certificate failed. The device is 
 								-- unauthenticated. Whether communication with the device is 
@@ -413,7 +378,7 @@ DEFINITIONS ::= BEGIN
 	MessageType ::= INTEGER {
 		other(0),								-- other(0) shall not be used for the message type. 
 		association-authorization-request(1),	-- These values are used to identify a message in a 
-		association-authorization-status(2),		-- Challenge or a ChallengeResponse
+		association-authorization-status(2),	-- Challenge or a ChallengeResponse
 		challenge(3),							-- 
 		challenge-response(4),					-- 
 		device-certificate(5),					-- 
@@ -426,7 +391,7 @@ DEFINITIONS ::= BEGIN
 		routing-table-confirmation(12),			-- 
 		routing-table-request(13),				-- 
 		routing-table-status(14),				-- 
-		routing-table-statusRequest(15),			-- 
+		routing-table-statusRequest(15),		-- 
 		routing-table-update(16),				-- 
 		routing-table-update-confirmation(17)	-- 
 	}
@@ -445,16 +410,9 @@ DEFINITIONS ::= BEGIN
 		device-decommissioned(1),	-- The device was decommissioned and should not longer be part 
 									-- of the system. Devices shall no longer communicate with it. 
 									-- It may be re-instated later.
-		device-compromised(2),		-- The device, or the device’s key, was compromised and the 
-									-- device shall be removed from the 
+		device-compromised(2),		-- The device was compromised and shall be removed from the 
 									-- system. Devices shall no longer communicate with it.
-		authority-compromised(3),	-- The Authority, its private key, or one of the Certificate
-									-- Authorities it relies on, has been compromised
-		affiliation-changed(4),		-- The device’s affiliation to the system changed such that it 
-									-- is no longer within the area of responsibility of the present 
-									-- Authority.
-		privilege-withdrawn(5),		-- The device has lost its privileges on the system.
-		unspecified(6)				-- Reason for revocation is not specified.
+		unspecified(3)				-- Reason for revocation is not specified.
 	}
 	
 	RoutingTableUpdateOperation ::= INTEGER {
@@ -470,7 +428,8 @@ DEFINITIONS ::= BEGIN
 	-- ===================================================================
 	-- "borrowed" types
 	-- ===================================================================
-	-- Borrowed from IEC 62351-8	
+DistinguishedName
+	
 	IECUserRoles ::= SEQUENCE OF UserRoleInfo
 
 	UserRoleInfo ::= SEQUENCE { -- contains the role information blob
@@ -488,32 +447,12 @@ DEFINITIONS ::= BEGIN
 
 	Operation ::= ENUMERATED { add (1), delete (2), change (3) } 
 	
-	-- Borrowed from RFC 5280
-	Name ::= CHOICE { -- only one possibility for now --
-		rdnSequence  RDNSequence 
-	}
-
-	RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
-
-	DistinguishedName ::= RDNSequence
-
-	RelativeDistinguishedName ::= SET SIZE (1..MAX) OF AttributeTypeAndValue
-	AttributeTypeAndValue ::= SEQUENCE {
-		type     AttributeType,
-		value    AttributeValue
-	}
 	
-	AttributeType ::= OBJECT IDENTIFIER
-	AttributeValue ::= ANY -- DEFINED BY AttributeType
-
-	— ===================================================================
-	— The version
-	— ===================================================================
 	-- unofficial versions are denoted with datecodes. This leaves official
 	-- versions with over 20,000,000 possible versions before there is a 
 	-- possibility of collision, and clearly shows the difference between
 	-- official and unofficial versions.
-	Version ::= INTEGER { v20200530(20200530) }
+	Version ::= INTEGER { v20200518(20200518) }
 	
 END
 
