@@ -1,139 +1,187 @@
 -- ===================================================================
 -- AMP abstract syntax
 -- ===================================================================
--- For now, I've reserved an OID in the Vlinder Software namespace (as our second security protocol after SIT). This should move to an IEEE namespace (1.3.111.2.1815.1.1), but the reservation will have to stand.
-AuthorizationManagementProtocol { iso(1) org(3) dod(6) internet(1) private(4) enterprise(1) vlinder-software(49974) security(0) protocols(0) authorization-management-protocol(1) }
+-- For now, I've reserved an OID in the Vlinder Software namespace (as
+-- our second security protocol after SIT). This should move to an
+-- IEEE namespace (1.3.111.2.1815.1.1), but the reservation will have
+-- to stand.
+AuthorizationManagementProtocol {
+	iso(1) org(3) dod(6) internet(1) private(4) enterprise(1)
+	vlinder-software(49974) security(0) protocols(0)
+	authorization-management-protocol(1)
+}
 
--- Definitions are organized into sections: The first section is the one thing we expect (in this
--- case, the AMP PDU)
+-- Definitions are organized into sections: The first section is the
+-- one thing we expect (in this case, the AMP PDU)
 -- Definitions within each section appear in alphabetical order
 DEFINITIONS ::= BEGIN
 	EXPORTS AMPPDU;
 	
-	-- ===================================================================
-	-- the principal type
-	-- ===================================================================
+-- ===================================================================
+-- the principal type
+-- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version												Version DEFAULT v20200513,
-		sequenceNumber										INTEGER DEFAULT 0,
-		targetCommonName									CommonName OPTIONAL,		-- if absent, the message targets the Authority.
-																						-- If present, the message SHALL be signed by the Authority
-		payload												AMPPDUPayload,
-		signature											Signature
+		version								Version DEFAULT v20200721,
+		sequenceNumber						INTEGER DEFAULT 0,
+		— if targetName is absent, the message targets the Authority.
+		— If present, the message SHALL be signed by the Authority
+		targetName							DistinguishedName OPTIONAL,
+		payload								AMPPDUPayload,
+		signature							Signature
 	}
 	
-	-- ===================================================================
-	-- types
-	-- ===================================================================
-	-- -------------------------------------------------------------------
-	-- structural types
-	-- -------------------------------------------------------------------
+-- ===================================================================
+-- types
+-- ===================================================================
+-- -------------------------------------------------------------------
+-- structural types
+-- -------------------------------------------------------------------
 	-- the PDU payload: a top-level choice item
 	AMPPDUPayload ::= CHOICE {
-		authorityMessage				[0]					AuthorityMessage,	-- messages initiated by the Authority
-		deviceMessage					[1]					DeviceMessage		-- messages initiated by a Device
+		-- messages initiated by the Authority
+		authorityMessage				[0]	AuthorityMessage,
+		-- messages initiated by a Device
+		deviceMessage				[1]	DeviceMessage
 	}
 	
 	AuthorityMessage ::= CHOICE {
-		associationAuthorizationStatus	[0]		IMPLICIT	AssociationAuthorizationStatus,	-- needs a challenge
-		deviceRevocation				[1]		IMPLICIT	DeviceRevocation,				-- needs a challenge
-		deviceStatus					[2]		IMPLICIT	DeviceStatus,					-- needs a challenge
-		deviceVerificationResponse		[3]		IMPLICIT	DeviceVerificationResponse,
-		routingTableRequest				[4]		IMPLICIT	RoutingTableRequest,
-		routingTableStatusRequest		[5]		IMPLICIT	RoutingTableStatusRequest,
-		routingTableConfirmation		[6]		IMPLICIT	RoutingTableConfirmation,
-		routingTableUpdateConfirmation	[7]		IMPLICIT	RoutingTableUpdateConfirmation,
-		deviceCertificateRequest		[8]		IMPLICIT	DeviceCertificateRequest,
-		deviceCertificate				[9]		IMPLICIT	DeviceCertificate,
-		challenge						[10]	IMPLICIT	Challenge,
-		challengeResponse				[11]	IMPLICIT	ChallengeResponse,
-		policies						[12]	IMPLICIT	Policies,
-		caCertificateChain				[13]	IMPLICIT	CACertificateChain
+		associationAuthorizationStatus	[0]		IMPLICIT	
+			AssociationAuthorizationStatus,
+		deviceRevocation					[1]		IMPLICIT
+			DeviceRevocation,
+		deviceStatus						[2]		IMPLICIT
+			DeviceStatus,
+		deviceVerificationResponse		[3]		IMPLICIT
+			DeviceVerificationResponse,
+		routingTableRequest				[4]		IMPLICIT
+			RoutingTableRequest,
+		routingTableStatusRequest		[5]		IMPLICIT
+			RoutingTableStatusRequest,
+		routingTableConfirmation			[6]		IMPLICIT
+			RoutingTableConfirmation,
+		routingTableUpdateConfirmation	[7]		IMPLICIT
+			RoutingTableUpdateConfirmation,
+		deviceCertificateRequest			[8]		IMPLICIT
+			DeviceCertificateRequest,
+		deviceCertificate				[9]		IMPLICIT
+			DeviceCertificate,
+		challenge						[10]		IMPLICIT
+			Challenge,
+		challengeResponse				[11]		IMPLICIT
+			ChallengeResponse,
+		policies							[12]		IMPLICIT
+			Policies,
+		caCertificateChain				[13]		IMPLICIT
+			CACertificateChain
 	}
 	
 	DeviceMessage ::= CHOICE {
-		associationAuthorizationRequest	[0]		IMPLICIT	AssociationAuthorizationRequest,
-		deviceVerificationRequest		[1]		IMPLICIT	DeviceVerificationRequest,
-		routingTable					[2]		IMPLICIT	RoutingTable,					-- needs a challenge
-		routingTableRequest				[3]		IMPLICIT	RoutingTableRequest,
-		routingTableStatus				[4]		IMPLICIT	RoutingTableStatus,
-		routingTableStatusRequest		[5]		IMPLICIT	RoutingTableStatusRequest,
-		routingTableUpdate				[6]		IMPLICIT	RoutingTableUpdate,
-		routingTableConfirmation		[7]		IMPLICIT	RoutingTableConfirmation,
-		routingTableUpdateConfirmation	[8]		IMPLICIT	RoutingTableUpdateConfirmation,
-		deviceCertificateRequest		[9]		IMPLICIT	DeviceCertificateRequest,
-		deviceCertificate				[10]	IMPLICIT	DeviceCertificate,
-		challenge						[11]	IMPLICIT	Challenge,
-		challengeResponse				[12]	IMPLICIT	ChallengeResponse,
-		caCertificateChainRequest		[13]	IMPLICIT	CACertificateChainRequest
+		associationAuthorizationRequest	[0]		IMPLICIT
+			AssociationAuthorizationRequest,
+		deviceVerificationRequest		[1]		IMPLICIT
+			DeviceVerificationRequest,
+		routingTable						[2]		IMPLICIT
+			RoutingTable,
+		routingTableRequest				[3]		IMPLICIT
+			RoutingTableRequest,
+		routingTableStatus				[4]		IMPLICIT
+			RoutingTableStatus,
+		routingTableStatusRequest		[5]		IMPLICIT
+			RoutingTableStatusRequest,
+		routingTableUpdate				[6]		IMPLICIT
+			RoutingTableUpdate,
+		routingTableConfirmation			[7]		IMPLICIT
+			RoutingTableConfirmation,
+		routingTableUpdateConfirmation	[8]		IMPLICIT
+			RoutingTableUpdateConfirmation,
+		deviceCertificateRequest			[9]		IMPLICIT
+			DeviceCertificateRequest,
+		deviceCertificate				[10]		IMPLICIT
+			DeviceCertificate,
+		challenge						[11]		IMPLICIT
+			Challenge,
+		challengeResponse				[12]		IMPLICIT
+			ChallengeResponse,
+		caCertificateChainRequest		[13]		IMPLICIT
+			CACertificateChainRequest
 	}
 	
-	-- -------------------------------------------------------------------
-	-- service request types
-	-- -------------------------------------------------------------------
-	-- Sent by a Device to an Authority to request authorization to communicate on a MOA
-	-- The Authority SHALL respond with an AssociationAuthorizationStatus unless the device making
-	-- the request has been revoked or the signature on the message does not verify
+-- -------------------------------------------------------------------
+-- service request types
+-- -------------------------------------------------------------------
+	-- Sent by a Device to an Authority to request authorization to
+	-- communicate on a MOA.
+	-- The Authority SHALL respond with an 
+	-- AssociationAuthorizationStatus unless the device making the 
+	-- request has been revoked or the signature on the message does
+	-- not verify
 	-- The Master shall initiate this request if either:
 	-- - its policies require it to do so, or
-	-- - it receives an AssociationAuthorizationRequest from the Outstation at the other 
-	--   end of the MOA and cannot present a valid AssociationAuthorization.
+	-- - it receives an AssociationAuthorizationRequest from the
+	--  Outstation at the other end of the MOA and cannot present
+	--  a valid AssociationAuthorization.
 	AssociationAuthorizationRequest ::= SEQUENCE {
-		associationName								AssociationName
+		associationName						AssociationName
 	}
 	
-	-- Sent by the Authority in response to an AssociationAuthorizationRequest or a 
-	-- DeviceVerificationRequest from a device, about a device that it is not authorized to 
-	-- communicate with.
-	-- May also be sent by the Authority if it, for any reason, decides to revoke
-	-- authorization for an association.
-	-- Effectively, the Master can request the authorization and receive it from the 
-	-- Authority. The Master can then forward the authorization to the Outstation, 
-	-- which should it be interested in knowing that they're allowed to talk about.
+	-- Sent by the Authority in response to an 
+	-- AssociationAuthorizationRequest or a 
+	-- DeviceVerificationRequest from a device, about a device that
+	-- it is not authorized to communicate with.
+	-- May also be sent by the Authority if it, for any reason, decides
+	-- to revoke authorization for an association.
+	-- Effectively, the Master can request the authorization and receive
+	-- it from the Authority. The Master can then forward the
+	-- authorization to the Outstation, which should it be interested
+	-- in knowing that they're allowed to talk.
 	AssociationAuthorizationStatus ::= SEQUENCE {
-		associationName								AssociationName,
-		authorization								AssociationAuthorization,
-		associationAttributes						Certificate
+		associationName						AssociationName,
+		authorization						AssociationAuthorization,
+		associationAttributes				Certificate
 	}
 	
 	CACertificate ::= SEQUENCE {
-		certificates								SEQUENCE OF Certificate
+		certificates							SEQUENCE OF Certificate
 	}
 	
 	CACertificateRequest ::= SEQUENCE {
-		issuerName									DistinguishedName
+		issuerName							DistinguishedName
 	}
 	
 	Challenge ::= SEQUENCE {
-		challengedMessageType						MessageType,
-		challengedMessageHash						Hash,
-		challengeData								OCTET STRING
+		challengedMessageType				MessageType,
+		challengedMessageHash				Hash,
+		challengeData						OCTET STRING
 	}
 	
-	ChallengeResponse ::= Challenge
+	ChallengeResponse ::= SEQUENCE {
+		challengedMessageType				MessageType,
+		challengedMessageHash				Hash
+	}
 	
 	-- Sent by an Authority or a device to convey a device certificate
 	DeviceCertificate ::= SEQUENCE {
-		certificate									Certificate
+		certificate							Certificate
 	}
 	
 	-- Sent by an Authority or a device to obtain its certificate
 	DeviceCertificateRequest ::= SEQUENCE {
-		deviceCommonName							CommonName
+		deviceCommonName						CommonName
 	}
 	
-	-- Broadcast by the Authority to all devices to let them know a device has
-	-- been revoked for some reason
+	-- Broadcast by the Authority to all devices to let them know a
+	-- device has been revoked for some reason
 	DeviceRevocation ::= SEQUENCE {
 		deviceCommonName							CommonName,
-		reason										RevocationReason,
+		reason									RevocationReason,
 		reasonString								UTF8String OPTIONAL
 	}
 	
-	-- Sent by the Authority to indicate the status of a device, unsolicited
+	-- Sent by the Authority to indicate the status of a device,
+	-- unsolicited
 	DeviceStatus ::= SEQUENCE {
-		deviceCommonName							CommonName,
-		status										SET OF DeviceVerificationStatus
+		deviceCommonName				CommonName,
+		status						SET OF DeviceVerificationStatus
 	}
 	
 	-- Sent by the Authority in response to a DeviceVerificationRequest
@@ -142,218 +190,276 @@ DEFINITIONS ::= BEGIN
 	-- Sent by a device to request verification of another device. 
 	-- Possible responses include:
 	-- - unknown certificate
-	--   Authority sends a DeviceVerificationResponse with a unknown-certificate status
-	--   mutually exclusive with all other status bits
+	--   Authority sends a DeviceVerificationResponse with a
+	--   unknown-certificate status mutually exclusive with all 
+	--   other status bits.
 	-- - "you are not authorized to talk to this device"
-	--   Authority sends an AssociationAuthorizationResponse and MAY send 
-	--   DeviceVerificationResponse
+	--   Authority sends an AssociationAuthorizationResponse and  
+	--   MAY send DeviceVerificationResponse
 	-- - verified
-	--   Authority sends a DeviceVerificationResponse with a verified status
-	--   may be combined with revoked for a valid cert of a revoked device
+	--   Authority sends a DeviceVerificationResponse with a verified 
+	--   status may be combined with revoked for a valid cert of a
+	--   revoked device
 	-- - revoked
-	--   Authority sends a DeviceVerificationResponse with a revoked status
-	--   may be combined with verified or verification-failed. Indicates the device has been 
-	--   revoked and should therefore not be communicated with
+	--   Authority sends a DeviceVerificationResponse with a revoked
+	--   status. May be combined with verified or verification-failed.
+	--   Indicates the device has been revoked and should therefore 
+	--   not be communicated with
 	-- - verification-failed
-	--   may be combined with revoked for an invalid cert purported to be from a revoked device
+	--   may be combined with revoked for an invalid cert purported
+	--   to be from a revoked device
 	DeviceVerificationRequest ::= SEQUENCE {
-		-- Certificate of the device for which verification is being requested. This is the same 
-		-- certificate as used during the SAv6 enrolment handshake
-		deviceCertificate							Certificate
+		-- Certificate of the device for which verification is being
+		-- requested. This is the same certificate as used during
+		-- the SAv6 enrolment handshake
+		deviceCertificate						Certificate
 	}
 	
-	-- Maintained by devices and sent by the Authority, the policies determine the behavior of 
-	-- the device is various security-related circumstances.
+	-- Maintained by devices and sent by the Authority, the policies
+	-- determine the behavior of the device is various
+	-- security-related circumstances.
 	Policies ::= SEQUENCE {
-		version										INTEGER,	-- Non-negative integer version of 
-																-- the policies. Must be strictly 
-																-- greater than any previous version 
-																-- of the policy sent by the Authority 
-																-- so it can be validated by the 
-																-- device, which shall not accept 
-																-- a policy that is different from 
-																-- its current policy if its version 
-																-- number is smaller than or equal to
-																-- that of its current policy. Built-in
-																-- default configurations have version 0.
-		unauthorizedAssociationPolicy				UnauthorizedAssociationPolicy,
-		authorizedAssociationPolicy					AuthorizedAssociationPolicy,
-		unauthenticatedDevicePolicy					UnauthenticatedDevicePolicy,
-		defaultAccessPolicy							DefaultAccessPolicy,
-		authenticationExpirationPolicy				AuthenticationExpirationPolicy,
-		authoritySignatureVerificationPolicy		AuthoritySignatureVerificationPolicy
+		-- Non-negative integer version of the policies. Must be
+		-- strictly greater than any previous version of the policy
+		-- sent by the Authority so it can be validated by the device,
+		-- which shall not accept a policy that is different from its
+		-- current policy if its version number is smaller than or
+		-- equal to that of its current policy. Built-in default
+		-- configurations have version 0.
+		version							INTEGER,	
+		unauthorizedAssociationPolicy	UnauthorizedAssociationPolicy,
+		authorizedAssociationPolicy		AuthorizedAssociationPolicy,
+		unauthenticatedDevicePolicy		UnauthenticatedDevicePolicy,
+		defaultAccessPolicy				DefaultAccessPolicy,
+		authenticationExpirationPolicy	AuthenticationExpirationPolicy,
+		authoritySignatureVerificationPolicy
+			AuthoritySignatureVerificationPolicy
 	}
 	
 	RoutingConfiguration ::= SEQUENCE {
-		routingTableUpdatePeriod					INTEGER,			-- number of seconds between updates
-		routingTableEntryTTL						INTEGER,			-- Number of seconds the entry should be kept in the table (should typically be longer than the time between updates)
+		-- number of seconds between updates
+		routingTableUpdatePeriod					INTEGER,
+		-- Number of seconds the entry should be kept in the table
+		-- (should typically be longer than the time between updates)
+		routingTableEntryTTL						INTEGER,	
 	}
 	
-	-- Sent by devices in response to a RoutingTableRequest to convey the entire routing table.
-	-- The routing table may exceed the size of an AMP PDU (which has to fit in an SPDU, which 
-	-- maybe as small as 254 bytes), so it may be sent in several "chunks" with the "moreFollows"
-	-- bit set on each but the last PDU.
-	-- The table version starts at 0 and is incremented every time an entry is added to, or removed
-	-- from, the device's table. Thus, other devices can verify whether the table has changed by 
-	-- reading the table version (conveyed in the RoutingTableStatus message).
+	-- Sent by devices in response to a RoutingTableRequest to convey
+	-- the entire routing table. The routing table may exceed the size
+	-- of an AMP PDU (which has to fit in an SPDU, which 
+	-- maybe as small as 254 bytes), so it may be sent in several
+	-- "chunks" with the "moreFollows" bit set on each but the last
+	-- PDU. The table version starts at 0 and is incremented every
+	-- time an entry is added to, or removed from, the device's
+	-- table. Thus, other devices can verify whether the table has
+	-- changed by reading the table version (conveyed in the
+	-- RoutingTableStatus message).
 	-- Entries in the table have no particular order.
 	RoutingTable ::= SEQUENCE {
-		tableVersion								INTEGER,
-		routingTable								SET OF RoutingTableEntry,
-		moreFollows									BOOLEAN DEFAULT FALSE 	-- in case the routing 
-																			-- table exceeds to
-																			-- maximum size of an
-																			-- AMP PDU
+		tableVersion						INTEGER,
+		routingTable						SET OF RoutingTableEntry,
+		-- in case the routing table exceeds to maximum size of
+		-- an AMP PDU
+		moreFollows						BOOLEAN DEFAULT FALSE
 	}
 	
-	-- Sent by a device or an Authority to acknowledge receipt of part of the routing table, so the 
-	-- next message can be sent by the device.
+	-- Sent by a device or an Authority to acknowledge receipt of
+	-- part of the routing table, so the next message can be sent
+	-- by the device.
 	RoutingTableConfirmation ::= SEQUENCE {
 		sequenceNumber								INTEGER
 	}
 	
-	-- Request to read the routing table. If the entire table is read (operation == read) the 
-	-- tableVersion field shall not be included in the message. If an update is requested, the 
-	-- tableVersion shall be set to the last version obtained by the requesting device. In the
-	-- former case, the response shall be a RoutingTable. In the latter case, it shall be:
-	-- - if the version is still the same, a RoutingTableStatus message with the current version
-	-- - if entries have been added but no entries have been removed, a RoutingTableUpdate
-	--   message (or a series of RoutingTableUpdate messages) listing the entries that have been 
-	--   added
-	-- - if entries have been removed but no entries have been added, a RoutingTableUpdate
-	--   message (or a series of RoutingTableUpdate messages) listing the entries that have been 
-	--   removed
-	-- - if entries have been removed and entries have been added, at least two RoutingTableUpdate
-	--   messages, one listing the entries that have been removed and one listing the entries that
-	--   have been added. Added and removed entries may be conveyed in any order. If there are more
-	--   additions and/or removals than can fit in a single messages there will be more than two 
-	--   messages in the response.
+	-- Request to read the routing table. If the entire table is
+	-- read (operation == read) the tableVersion field shall not
+	-- be included in the message. If an update is requested, the 
+	-- tableVersion shall be set to the last version obtained by
+	-- the requesting device. In the former case, the response
+	-- shall be a RoutingTable. In the latter case, it shall be:
+	-- - if the version is still the same, a RoutingTableStatus
+	--   message with the current version
+	-- - if entries have been added but no entries have been removed,
+	--   a RoutingTableUpdate message (or a series of
+	--   RoutingTableUpdate messages) listing the entries that have
+	--   been added
+	-- - if entries have been removed but no entries have been added,
+	--   a RoutingTableUpdate message (or a series of RoutingTableUpdate
+	--   messages) listing the entries that have been removed
+	-- - if entries have been removed and entries have been added,
+	--   at least two RoutingTableUpdate messages, one listing the
+	--   entries that have been removed and one listing the entries
+	--   that have been added. Added and removed entries may be
+	--   conveyed in any order. If there are more additions and/or
+	--   removals than can fit in a single messages there will be
+	--   more than two messages in the response.
 	RoutingTableRequest ::= SEQUENCE {
-		operation									RoutingTableRequestOperation,
-		tableVersion								INTEGER OPTIONAL
+		operation					RoutingTableRequestOperation,
+		tableVersion					INTEGER OPTIONAL
 	}
 	
-	-- Sent by a device to indicate the current status (i.e. version) of the routing table
-	-- Note that this version drops to 0 on device restart. The DNP3 Application Layer receives
-	-- a separate indication of device restart in an IIN, which should be forwarded to AMP. If 
-	-- a remote device restarts, the local version of their routing table should be set to 0.
+	-- Sent by a device to indicate the current status (i.e. version)
+	-- of the routing table
+	-- Note that this version drops to 0 on device restart. The DNP3
+	-- Application Layer receives a separate indication of device
+	-- restart in an IIN, which should be forwarded to AMP. If 
+	-- a remote device restarts, the local version of their routing
+	-- table should be set to 0.
 	-- A routing table with version number 0 shall always be empty.
 	RoutingTableStatus ::= SEQUENCE {
-		tableVersion								INTEGER
+		tableVersion					INTEGER
 	}
 	
-	-- Sent by a device or the Authority to request the current status (i.e. version) of the riytubg 
-	-- table. Has no payload.
+	-- Sent by a device or the Authority to request the current
+	-- status (i.e. version) of the routing table. Has no payload.
 	RoutingTableStatusRequest ::= SEQUENCE {
 		-- no payload for this one
 	}
 	
-	-- Update for the routing table. May be used (by a device) to indicate that entries 
-	-- have been added or removed from the routing table. A single message can only contain 
-	-- additions xor removals (not both). The tableVersion in the message shall indicate the 
-	-- current version of the table. The moreFollows field shall be present and set to true
-	-- if any more messages are needed to convey the additions & removals from the table.
-	-- If sent in response to a RoutingTableRequest and a device has both been added and removed
-	-- from the table between the version in the request and the version in the response, both
-	-- events shall be reported in order (such as to prevent the ABA problem).
+	-- Update for the routing table. May be used (by a device) to
+	-- indicate that entries have been added or removed from the
+	-- routing table. A single message can only contain additions
+	-- xor removals (not both). The tableVersion in the message
+	-- shall indicate the current version of the table. The
+	-- moreFollows field shall be present and set to true
+	-- if any more messages are needed to convey the additions &
+	-- removals from the table.
+	-- If sent in response to a RoutingTableRequest and a device
+	-- has both been added and removed from the table between the
+	-- version in the request and the version in the response, both
+	-- events shall be reported in order (such as to prevent the ABA
+	-- problem).
 	RoutingTableUpdate ::= SEQUENCE {
-		operation									RoutingTableUpdateOperation,
-		entries										SET OF RoutingTableEntry,
-		tableVersion								INTEGER,
-		moreFollows									BOOLEAN DEFAULT FALSE
+		operation					RoutingTableUpdateOperation,
+		entries						SET OF RoutingTableEntry,
+		tableVersion					INTEGER,
+		moreFollows					BOOLEAN DEFAULT FALSE
 	}
 	
-	-- Sent by a device or an Authority to acknowledge receipt of an update, so the next message can 
-	-- be sent by the device.
+	-- Sent by a device or an Authority to acknowledge receipt of
+	-- an update, so the next message can be sent by the device.
 	RoutingTableUpdateConfirmation ::= SEQUENCE {
-		sequenceNumber								INTEGER
+		sequenceNumber				INTEGER
 	}
 	
-	-- ===================================================================
-	-- supporting types
-	-- ===================================================================
+-- ===================================================================
+-- supporting types
+-- ===================================================================
 	AssocationName ::= SEQUENCE {
-		masterCommonName							CommonName,
-		outstationCommonName						CommonName,
-		aid											INTEGER OPTIONAL,
-		all											BOOLEAN OPTIONAL
+		masterCommonName				CommonName,
+		outstationCommonName			CommonName,
+		aid							INTEGER OPTIONAL,
+		all							BOOLEAN OPTIONAL
 	}
 
 	AuthenticationExpirationPolicy ::= SEQUENCE {
-		mayCommunicate								AuthenticationExpirationCommunicationPolicy
-		duration									INTEGER	OPTIONAL	-- non-negative. Indicates whether a device can continue to 
-																		-- communicate with a peer after its credentials (its Identity 
-																		-- Certificate) expires, and for how long (in seconds). If zero,
-																		-- expiration of the certificate immediately invalidates both the
-																		-- Update Key and any Session Keys that may be active at the time.
-																		-- Required of mayCommunicate is limited-time(3)
+		mayCommunicate	AuthenticationExpirationCommunicationPolicy
+		-- non-negative. Indicates whether a device can continue to 
+		-- communicate with a peer after its credentials (its Identity 
+		-- Certificate) expires, and for how long (in seconds). If zero,
+		-- expiration of the certificate immediately invalidates both
+		-- the Update Key and any Session Keys that may be active at
+		-- the time. Required if mayCommunicate is limited-time(3)
+		duration						INTEGER	OPTIONAL	
 	}
 	
 	AuthoritySignatureVerificationPolicy ::= SEQUENCE {
-		authorityIdentityCertificates				SET OF Certificate OPTIONAL,		-- Identity certificates for the Authority(ies)
-		trustedRootCertificate						Certificate OPTIONAL				-- Identity certificate of the trusted root CA. Note that either an Authority Identity Certificate or a Trusted Root Certificate is required
+		-- Identity certificates for the Authority(ies)
+		authorityIdentityCertificates		SET OF Certificate OPTIONAL,
+		-- Identity certificate of the trusted root CA. Note that
+		-- either an Authority Identity Certificate or a Trusted Root
+		-- Certificate is required
+		trustedRootCertificate				Certificate OPTIONAL
 	}
 	
 	AuthorizedAssociationPolicy ::= SEQUENCE {
-		refreshAuthorization						AuthorizationRefreshPolicy,
-		refreshAuthorizationInterval				INTEGER OPTIONAL,					-- If authorization refresh requests are recurring, indicates the interval
-																						-- at which the device should ask, in seconds. Required if refreshAuthorization
-																						-- is not never(1)
-		refreshTimeout								INTEGER OPTIONAL					-- time-out for the authorization refresh. Once expired without authorization,
-																						-- the association is unauthorized. Required if refreshAuthorization
-																						-- is not never(1)
+		refreshAuthorization				AuthorizationRefreshPolicy,
+		-- If authorization refresh requests are recurring,
+		-- indicates the interval at which the device should ask,
+		-- in seconds. Required if refreshAuthorization is not never(1)
+		refreshTimeout					INTEGER OPTIONAL	,
+		refreshAuthorizationInterval		INTEGER OPTIONAL
 	}
 
-	CommonName ::= UTF8String -- CommonName from the certificate, must be system-wide unique
+	-- CommonName from the certificate, must be system-wide unique
+	CommonName ::= UTF8String
 
 	Certificate ::= OCTET STRING
 	
 	DefaultAccessPolicy ::= SEQUENCE {
-		defaultRoles								IECUserRoles
+		defaultRoles						IECUserRoles
 	}
 	
 	Hash ::= SEQUENCE {
-		algorithm									OBJECT IDENTIFIER,
-		digest										OCTET STRING
+		algorithm						OBJECT IDENTIFIER,
+		digest							OCTET STRING
 	}
 
 	RoutingTableEntry ::= SEQUENCE {
-		commonName									CommonName,
-		trusted										BOOLEAN,		-- certificate was verified - the device is authentic
-		trustedSource								BOOLEAN			-- certificate of the device that reported this entry to us (and every device in between) is verified
+		commonName						CommonName,
+		-- certificate was verified - the device is authentic
+		trusted							BOOLEAN,
+		-- certificate of the device that reported this entry
+		-- to us (and every device in between) is verified
+		trustedSource					BOOLEAN
 	}
 
 	UnauthenticatedDevicePolicy ::= SEQUENCE {
-		mayCommunicate								BOOLEAN,		-- Indicates whether a device can communicate with an unauthenticated device
-		requestAuthentication						RequestAuthenticationPolicy,		-- Indicates when a device should ask for authentication of the other device
-		requestAuthenticationInterval				INTEGER OPTIONAL	-- If authentication requests are recurring, indicates the interval at which 
-																		-- the device should ask, in seconds. Device won’t ask if already authenticated.
-																		-- Authentication is in the form of a certificate, so device remains authenticated 
-																		-- for the duration of validity of the certificate
-																		-- required if requestAuthentication is recurring(2)
+		-- Indicates whether a device can communicate with an
+		-- unauthenticated device
+		mayCommunicate					BOOLEAN,
+		-- Indicates when a device should ask for authentication of
+		-- the other device
+		requestAuthentication			RequestAuthenticationPolicy,	
+		-- If authentication requests are recurring, indicates the
+		-- interval at which the device should ask, in seconds. Device
+		-- won’t ask if already authenticated.
+		-- Authentication is in the form of a certificate, so device
+		-- remains authenticated for the duration of validity of the
+		-- certificate. Required if requestAuthentication is
+		-- recurring(2)
+		requestAuthenticationInterval	INTEGER OPTIONAL
 	}
-	UnauthorizedAssociationPolicy
+	
+	UnauthorizedAssociationPolicy ::= SEQUENCE {
+		-- TODO
+	}
 
-	-- ===================================================================
-	-- enumerations
-	-- ===================================================================
+-- ===================================================================
+-- enumerations
+-- ===================================================================
 	AssociationAuthorization ::= INTEGER {
-		other(0),			-- some status other than the following / unknown. Should not be used except as a
-							-- place-holder. Shall not be sent over the wire.
-		authorized(1),		-- the association is authorized to exist
-		unauthorized(2),	-- the association is not authorized to exist, but also not explicitly
-							-- denied. Whether devices are permitted to communicate is a local 
-							-- policy matter.
-		revoked(3),			-- the association has previously been authorized to exist but has since
-							-- been revoked. Devices shall not communicate
-		denied(4)			-- the association is not authorized. Devices shall not communicate
+		-- some status other than the following / unknown. Should not
+		-- be used except as a place-holder. Shall not be sent over
+		-- the wire.
+		other(0),
+		-- the association is authorized to exist
+		authorized(1),
+		-- the association is not authorized to exist, but also not
+		-- explicitly denied. Whether devices are permitted to
+		-- communicate is a local policy matter.
+		unauthorized(2),	
+		-- the association has previously been authorized to exist but
+		-- has since been revoked. Devices shall not communicate
+		revoked(3),
+		-- the association is not authorized. Devices shall not
+		-- communicate
+		denied(4)
 	}
 	
 	AuthenticationExpirationCommunicationPolicy ::= INTEGER {
-		other(0),					-- Something other than the following/unknown. Should not be used except as a place-holder. Shall not be sent over the wire.
-		while-update-key-valid(1),	-- Communication may continue after the Identity Certificate expires until the Update Key also expires
-		while-session-key-valid(2),	-- Communication may continue after the Identity Certificate expires until the current Session Keys expire
-		limited-time(3)				-- Communication may continue after the Identity Certificate expires for the specified duration
+		-- Something other than the following/unknown. Should not be
+		-- used except as a place-holder. Shall not be sent over the
+		-- wire.
+		other(0),
+		-- Communication may continue after the Identity Certificate
+		-- expires until the Update Key also expires
+		while-update-key-valid(1),
+		-- Communication may continue after the Identity Certificate
+		-- expires until the current Session Keys expire
+		while-session-key-valid(2),
+		-- Communication may continue after the Identity Certificate
+		-- expires for the specified duration
+		limited-time(3)
 	}
 	
 	AuthorizationRefreshPolicy ::= INTEGER {
@@ -363,37 +469,46 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	DeviceVerificationStatus ::= INTEGER {
-		other(0),				-- some status other than the following. Should not be used except 
-								-- as a place-holder. Shall not be sent over the wire
-		unknown-certificate(1),	-- The Authority was presented with an unknown certificate. The 
-								-- device is therefore unauthenticated. Whether communication with
-								-- the device is permitted is a local policy matter.
-		verified(2),			-- The device is authentic.
-		revoked(3),				-- The device is revoked: no communication with it is permitted.
-		verification-failed(4)	-- Verification of the presented certificate failed. The device is 
-								-- unauthenticated. Whether communication with the device is 
-								-- permitted is a local policy matter
+		-- some status other than the following. Should not be used
+		-- except as a place-holder. Shall not be sent over the wire
+		other(0),
+		-- The Authority was presented with an unknown certificate.
+		-- The device is therefore unauthenticated. Whether
+		-- communication with the device is permitted is a local
+		-- policy matter.
+		unknown-certificate(1),
+		-- The device is authentic.
+		verified(2),
+		-- The device is revoked: no communication with it is permitted.	
+		revoked(3),
+		-- Verification of the presented certificate failed. The
+		-- device is unauthenticated. Whether communication with the
+		-- device is permitted is a local policy matter
+		verification-failed(4)
 	}
 	
 	MessageType ::= INTEGER {
-		other(0),								-- other(0) shall not be used for the message type. 
-		association-authorization-request(1),	-- These values are used to identify a message in a 
-		association-authorization-status(2),	-- Challenge or a ChallengeResponse
-		challenge(3),							-- 
-		challenge-response(4),					-- 
-		device-certificate(5),					-- 
-		device-certificate-request(6),			-- 
-		device-revocation(7),					-- 
-		device-status(8),						-- 
-		device-verification-request(9),			-- 
-		device-verification-response(10),		-- 
-		routing-table(11),						-- 
-		routing-table-confirmation(12),			-- 
-		routing-table-request(13),				-- 
-		routing-table-status(14),				-- 
-		routing-table-statusRequest(15),		-- 
-		routing-table-update(16),				-- 
-		routing-table-update-confirmation(17)	-- 
+		-- other(0) shall not be used for the message type. 
+		other(0),
+		-- These values are used to identify a message in a 
+		-- Challenge or a ChallengeResponse
+		association-authorization-request(1),
+		association-authorization-status(2),
+		challenge(3),
+		challenge-response(4),
+		device-certificate(5),
+		device-certificate-request(6),
+		device-revocation(7),
+		device-status(8),
+		device-verification-request(9),
+		device-verification-response(10),
+		routing-table(11),
+		routing-table-confirmation(12),
+		routing-table-request(13),
+		routing-table-status(14),
+		routing-table-statusRequest(15),
+		routing-table-update(16),
+		routing-table-update-confirmation(17)
 	}
 	
 	RequestAuthenticationPolicy ::= INTEGER {
@@ -404,42 +519,55 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	RevocationReason ::= INTEGER {
-		other(0),					-- The device was revoked for some reason other than one of the 
-									-- enumerated ones. The reason shall be specified in the 
-									-- reasonString field of the revocation message.
-		device-decommissioned(1),	-- The device was decommissioned and should not longer be part 
-									-- of the system. Devices shall no longer communicate with it. 
-									-- It may be re-instated later.
-		device-compromised(2),		-- The device was compromised and shall be removed from the 
-									-- system. Devices shall no longer communicate with it.
-		unspecified(3)				-- Reason for revocation is not specified.
+		-- The device was revoked for some reason other than one of the 
+		-- enumerated ones. The reason shall be specified in the 
+		-- reasonString field of the revocation message.
+		other(0),
+		-- The device was decommissioned and should not longer be part 
+		-- of the system. Devices shall no longer communicate with it. 
+		-- It may be re-instated later.
+		device-decommissioned(1),
+		-- The device was compromised and shall be removed from the 
+		-- system. Devices shall no longer communicate with it.
+		device-compromised(2),
+		-- Reason for revocation is not specified.
+		unspecified(3)
 	}
 	
 	RoutingTableUpdateOperation ::= INTEGER {
-		add(1),			-- devices listed in the message are added to the table
-		remove(2),		-- devices listed in the message are removed from the table
-		modify(3)		-- devices listed in the message have changed state (e.g. trust or trustedSource state changed)
+		-- devices listed in the message are added to the table
+		add(1),
+		-- devices listed in the message are removed from the table
+		remove(2),
+		-- devices listed in the message have changed state
+		-- (e.g. trust or trustedSource state changed)
+		modify(3)
 	}
 	RoutingTableRequestOperation ::= INTEGER {
-		read(1),		-- request is to read the entire table
-		update(2)		-- request is to obtain updates to the table since the given version
+		-- request is to read the entire table
+		read(1),	
+		-- request is to obtain updates to the table since the
+		-- given version
+		update(2)
 	}
 
-	-- ===================================================================
-	-- "borrowed" types
-	-- ===================================================================
-DistinguishedName
+-- ===================================================================
+-- "borrowed" types
+-- ===================================================================
+	DistinguishedName ::= SEQUENCE {
+		-- TODO
+	}
 	
 	IECUserRoles ::= SEQUENCE OF UserRoleInfo
 
 	UserRoleInfo ::= SEQUENCE { -- contains the role information blob
 		-- IEC62351 specific parameter
-		userRole              			SEQUENCE SIZE (1..MAX) OF RoleID
-		aor                   			UTF8String (SIZE(1..64)),
-		revision              			INTEGER (0..255),
-		roleDefinition        			UTF8String (0..23),
+		userRole              		SEQUENCE SIZE (1..MAX) OF RoleID
+		aor                   		UTF8String (SIZE(1..64)),
+		revision              		INTEGER (0..255),
+		roleDefinition        		UTF8String (0..23),
 		-- optional fields to be used within IEEE 1815 and IEC60870-5
-		operation             			Operation OPTIONAL,
+		operation             		Operation OPTIONAL,
 		statusChangeSequenceNumber  	INTEGER (0..4294967295) OPTIONAL,
 	}
 
@@ -448,11 +576,10 @@ DistinguishedName
 	Operation ::= ENUMERATED { add (1), delete (2), change (3) } 
 	
 	
-	-- unofficial versions are denoted with datecodes. This leaves official
-	-- versions with over 20,000,000 possible versions before there is a 
-	-- possibility of collision, and clearly shows the difference between
-	-- official and unofficial versions.
-	Version ::= INTEGER { v20200518(20200518) }
-	
+	-- unofficial versions are denoted with datecodes. This leaves
+	-- official versions with over 20,000,000 possible versions
+	-- before there is a possibility of collision, and clearly
+	-- shows the difference between official and unofficial versions.
+	Version ::= INTEGER { v20200721(20200721) }
 END
 
