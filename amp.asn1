@@ -573,8 +573,7 @@ DEFINITIONS ::= BEGIN
 
 	RoleId ::= INTEGER (-32768..32767)
 
-	Operation ::= ENUMERATED { add (1), delete (2), change (3) } 
-	
+	Operation ::= ENUMERATED { add (1), delete (2), change (3) }
 	
 	-- unofficial versions are denoted with datecodes. This leaves
 	-- official versions with over 20,000,000 possible versions
