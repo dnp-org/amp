@@ -403,6 +403,11 @@ DEFINITIONS ::= BEGIN
 		trustedSource					BOOLEAN
 	}
 
+	Signature ::= SEQUENCE {
+		algorithm OBJECT IDENTIFIER,
+		signature BIT STRING
+	}
+
 	UnauthenticatedDevicePolicy ::= SEQUENCE {
 		-- Indicates whether a device can communicate with an
 		-- unauthenticated device
