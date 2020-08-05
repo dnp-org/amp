@@ -25,7 +25,7 @@ DEFINITIONS ::= BEGIN
 		sequenceNumber						INTEGER DEFAULT 0,
 		— if targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
-		targetName							DistinguishedName OPTIONAL,
+		address								Address,
 		payload								AMPPDUPayload,
 		signature							Signature
 	}
@@ -344,6 +344,11 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- supporting types
 -- ===================================================================
+	Address ::= CHOICE {
+		targetName				[0] IMPLICIT DistinguishedName,
+		deviceName				[1] IMPLICIT DistinguishedName
+	}
+
 	AssocationName ::= SEQUENCE {
 		masterCommonName				CommonName,
 		outstationCommonName			CommonName,
