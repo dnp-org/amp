@@ -39,70 +39,70 @@ DEFINITIONS ::= BEGIN
 	-- the PDU payload: a top-level choice item
 	AMPPDUPayload ::= CHOICE {
 		-- messages initiated by the Authority
-		authorityMessage				[0]	AuthorityMessage,
+		authorityMessage					[0]	AuthorityMessage,
 		-- messages initiated by a Device
-		deviceMessage				[1]	DeviceMessage
+		deviceMessage						[1]	DeviceMessage
 	}
 	
 	AuthorityMessage ::= CHOICE {
-		associationAuthorizationStatus	[0]		IMPLICIT	
+		associationAuthorizationStatus		[0]		IMPLICIT	
 			AssociationAuthorizationStatus,
 		deviceRevocation					[1]		IMPLICIT
 			DeviceRevocation,
 		deviceStatus						[2]		IMPLICIT
 			DeviceStatus,
-		deviceVerificationResponse		[3]		IMPLICIT
+		deviceVerificationResponse			[3]		IMPLICIT
 			DeviceVerificationResponse,
-		routingTableRequest				[4]		IMPLICIT
+		routingTableRequest					[4]		IMPLICIT
 			RoutingTableRequest,
-		routingTableStatusRequest		[5]		IMPLICIT
+		routingTableStatusRequest			[5]		IMPLICIT
 			RoutingTableStatusRequest,
 		routingTableConfirmation			[6]		IMPLICIT
 			RoutingTableConfirmation,
-		routingTableUpdateConfirmation	[7]		IMPLICIT
+		routingTableUpdateConfirmation		[7]		IMPLICIT
 			RoutingTableUpdateConfirmation,
 		deviceCertificateRequest			[8]		IMPLICIT
 			DeviceCertificateRequest,
-		deviceCertificate				[9]		IMPLICIT
+		deviceCertificate					[9]		IMPLICIT
 			DeviceCertificate,
-		challenge						[10]		IMPLICIT
+		challenge							[10]	IMPLICIT
 			Challenge,
-		challengeResponse				[11]		IMPLICIT
+		challengeResponse					[11]	IMPLICIT
 			ChallengeResponse,
-		policies							[12]		IMPLICIT
+		policies							[12]	IMPLICIT
 			Policies,
-		caCertificateChain				[13]		IMPLICIT
+		caCertificateChain					[13]	IMPLICIT
 			CACertificateChain
 	}
 	
 	DeviceMessage ::= CHOICE {
-		associationAuthorizationRequest	[0]		IMPLICIT
+		associationAuthorizationRequest		[0]		IMPLICIT
 			AssociationAuthorizationRequest,
-		deviceVerificationRequest		[1]		IMPLICIT
+		deviceVerificationRequest			[1]		IMPLICIT
 			DeviceVerificationRequest,
 		routingTable						[2]		IMPLICIT
 			RoutingTable,
-		routingTableRequest				[3]		IMPLICIT
+		routingTableRequest					[3]		IMPLICIT
 			RoutingTableRequest,
-		routingTableStatus				[4]		IMPLICIT
+		routingTableStatus					[4]		IMPLICIT
 			RoutingTableStatus,
-		routingTableStatusRequest		[5]		IMPLICIT
+		routingTableStatusRequest			[5]		IMPLICIT
 			RoutingTableStatusRequest,
-		routingTableUpdate				[6]		IMPLICIT
+		routingTableUpdate					[6]		IMPLICIT
 			RoutingTableUpdate,
 		routingTableConfirmation			[7]		IMPLICIT
 			RoutingTableConfirmation,
-		routingTableUpdateConfirmation	[8]		IMPLICIT
+		routingTableUpdateConfirmation		[8]		IMPLICIT
 			RoutingTableUpdateConfirmation,
 		deviceCertificateRequest			[9]		IMPLICIT
 			DeviceCertificateRequest,
-		deviceCertificate				[10]		IMPLICIT
+		deviceCertificate					[10]	IMPLICIT
 			DeviceCertificate,
-		challenge						[11]		IMPLICIT
+		challenge							[11]	IMPLICIT
 			Challenge,
-		challengeResponse				[12]		IMPLICIT
+		challengeResponse					[12]	IMPLICIT
 			ChallengeResponse,
-		caCertificateChainRequest		[13]		IMPLICIT
+		caCertificateChainRequest			[13]	IMPLICIT
 			CACertificateChainRequest
 	}
 	
@@ -141,7 +141,7 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	CACertificate ::= SEQUENCE {
-		certificates							SEQUENCE OF Certificate
+		certificates						SEQUENCE OF Certificate
 	}
 	
 	CACertificateRequest ::= SEQUENCE {
@@ -166,22 +166,22 @@ DEFINITIONS ::= BEGIN
 	
 	-- Sent by an Authority or a device to obtain its certificate
 	DeviceCertificateRequest ::= SEQUENCE {
-		deviceCommonName						CommonName
+		deviceCommonName					CommonName
 	}
 	
 	-- Broadcast by the Authority to all devices to let them know a
 	-- device has been revoked for some reason
 	DeviceRevocation ::= SEQUENCE {
-		deviceCommonName							CommonName,
-		reason									RevocationReason,
-		reasonString								UTF8String OPTIONAL
+		deviceCommonName					CommonName,
+		reason								RevocationReason,
+		reasonString						UTF8String OPTIONAL
 	}
 	
 	-- Sent by the Authority to indicate the status of a device,
 	-- unsolicited
 	DeviceStatus ::= SEQUENCE {
-		deviceCommonName				CommonName,
-		status						SET OF DeviceVerificationStatus
+		deviceCommonName					CommonName,
+		status								SET OF DeviceVerificationStatus
 	}
 	
 	-- Sent by the Authority in response to a DeviceVerificationRequest
@@ -212,7 +212,7 @@ DEFINITIONS ::= BEGIN
 		-- Certificate of the device for which verification is being
 		-- requested. This is the same certificate as used during
 		-- the SAv6 enrolment handshake
-		deviceCertificate						Certificate
+		deviceCertificate					Certificate
 	}
 	
 	-- Maintained by devices and sent by the Authority, the policies
@@ -226,22 +226,22 @@ DEFINITIONS ::= BEGIN
 		-- current policy if its version number is smaller than or
 		-- equal to that of its current policy. Built-in default
 		-- configurations have version 0.
-		version							INTEGER,	
-		unauthorizedAssociationPolicy	UnauthorizedAssociationPolicy,
-		authorizedAssociationPolicy		AuthorizedAssociationPolicy,
-		unauthenticatedDevicePolicy		UnauthenticatedDevicePolicy,
-		defaultAccessPolicy				DefaultAccessPolicy,
-		authenticationExpirationPolicy	AuthenticationExpirationPolicy,
+		version								INTEGER,	
+		unauthorizedAssociationPolicy		UnauthorizedAssociationPolicy,
+		authorizedAssociationPolicy			AuthorizedAssociationPolicy,
+		unauthenticatedDevicePolicy			UnauthenticatedDevicePolicy,
+		defaultAccessPolicy					DefaultAccessPolicy,
+		authenticationExpirationPolicy		AuthenticationExpirationPolicy,
 		authoritySignatureVerificationPolicy
-			AuthoritySignatureVerificationPolicy
+											AuthoritySignatureVerificationPolicy
 	}
 	
 	RoutingConfiguration ::= SEQUENCE {
 		-- number of seconds between updates
-		routingTableUpdatePeriod					INTEGER,
+		routingTableUpdatePeriod			INTEGER,
 		-- Number of seconds the entry should be kept in the table
 		-- (should typically be longer than the time between updates)
-		routingTableEntryTTL						INTEGER,	
+		routingTableEntryTTL				INTEGER,	
 	}
 	
 	-- Sent by devices in response to a RoutingTableRequest to convey
@@ -260,14 +260,14 @@ DEFINITIONS ::= BEGIN
 		routingTable						SET OF RoutingTableEntry,
 		-- in case the routing table exceeds to maximum size of
 		-- an AMP PDU
-		moreFollows						BOOLEAN DEFAULT FALSE
+		moreFollows							BOOLEAN DEFAULT FALSE
 	}
 	
 	-- Sent by a device or an Authority to acknowledge receipt of
 	-- part of the routing table, so the next message can be sent
 	-- by the device.
 	RoutingTableConfirmation ::= SEQUENCE {
-		sequenceNumber								INTEGER
+		sequenceNumber						INTEGER
 	}
 	
 	-- Request to read the routing table. If the entire table is
@@ -293,8 +293,8 @@ DEFINITIONS ::= BEGIN
 	--   removals than can fit in a single messages there will be
 	--   more than two messages in the response.
 	RoutingTableRequest ::= SEQUENCE {
-		operation					RoutingTableRequestOperation,
-		tableVersion					INTEGER OPTIONAL
+		operation							RoutingTableRequestOperation,
+		tableVersion						INTEGER OPTIONAL
 	}
 	
 	-- Sent by a device to indicate the current status (i.e. version)
@@ -306,7 +306,7 @@ DEFINITIONS ::= BEGIN
 	-- table should be set to 0.
 	-- A routing table with version number 0 shall always be empty.
 	RoutingTableStatus ::= SEQUENCE {
-		tableVersion					INTEGER
+		tableVersion						INTEGER
 	}
 	
 	-- Sent by a device or the Authority to request the current
@@ -329,42 +329,42 @@ DEFINITIONS ::= BEGIN
 	-- events shall be reported in order (such as to prevent the ABA
 	-- problem).
 	RoutingTableUpdate ::= SEQUENCE {
-		operation					RoutingTableUpdateOperation,
-		entries						SET OF RoutingTableEntry,
-		tableVersion					INTEGER,
-		moreFollows					BOOLEAN DEFAULT FALSE
+		operation							RoutingTableUpdateOperation,
+		entries								SET OF RoutingTableEntry,
+		tableVersion						INTEGER,
+		moreFollows							BOOLEAN DEFAULT FALSE
 	}
 	
 	-- Sent by a device or an Authority to acknowledge receipt of
 	-- an update, so the next message can be sent by the device.
 	RoutingTableUpdateConfirmation ::= SEQUENCE {
-		sequenceNumber				INTEGER
+		sequenceNumber						INTEGER
 	}
 	
 -- ===================================================================
 -- supporting types
 -- ===================================================================
 	Address ::= CHOICE {
-		targetName				[0] IMPLICIT DistinguishedName,
-		deviceName				[1] IMPLICIT DistinguishedName
+		targetName							[0] IMPLICIT DistinguishedName,
+		deviceName							[1] IMPLICIT DistinguishedName
 	}
 
 	AssociationName ::= SEQUENCE {
-		masterCommonName				CommonName,
-		outstationCommonName			CommonName,
-		aid							INTEGER OPTIONAL,
-		all							BOOLEAN OPTIONAL
+		masterCommonName					CommonName,
+		outstationCommonName				CommonName,
+		aid									INTEGER OPTIONAL,
+		all									BOOLEAN OPTIONAL
 	}
 
 	AuthenticationExpirationPolicy ::= SEQUENCE {
-		mayCommunicate	AuthenticationExpirationCommunicationPolicy
+		mayCommunicate						AuthenticationExpirationCommunicationPolicy
 		-- non-negative. Indicates whether a device can continue to 
 		-- communicate with a peer after its credentials (its Identity 
 		-- Certificate) expires, and for how long (in seconds). If zero,
 		-- expiration of the certificate immediately invalidates both
 		-- the Update Key and any Session Keys that may be active at
 		-- the time. Required if mayCommunicate is limited-time(3)
-		duration						INTEGER	OPTIONAL	
+		duration							INTEGER	OPTIONAL	
 	}
 	
 	AuthoritySignatureVerificationPolicy ::= SEQUENCE {
@@ -381,7 +381,7 @@ DEFINITIONS ::= BEGIN
 		-- If authorization refresh requests are recurring,
 		-- indicates the interval at which the device should ask,
 		-- in seconds. Required if refreshAuthorization is not never(1)
-		refreshTimeout					INTEGER OPTIONAL	,
+		refreshTimeout						INTEGER OPTIONAL,
 		refreshAuthorizationInterval		INTEGER OPTIONAL
 	}
 
@@ -397,33 +397,33 @@ DEFINITIONS ::= BEGIN
 	Fingerprint ::= Hash
 	
 	Hash ::= SEQUENCE {
-		algorithm						OBJECT IDENTIFIER,
-		digest							OCTET STRING
+		algorithm							OBJECT IDENTIFIER,
+		digest								OCTET STRING
 	}
 
 	RoutingTableEntry ::= SEQUENCE {
-		name							DistinguishedName,
+		name								DistinguishedName,
 		-- certificate was verified - the device is authentic
-		trusted							BOOLEAN,
+		trusted								BOOLEAN,
 		-- certificate of the device that reported this entry
 		-- to us (and every device in between) is verified
 		trustedSource						BOOLEAN,
 		-- hash of the device's public key (the algorithm should always be SHA256)
-		fingerprint						Fingerprint
+		fingerprint							Fingerprint
 	}
 
 	Signature ::= SEQUENCE {
-		algorithm OBJECT IDENTIFIER,
-		signature BIT STRING
+		algorithm							OBJECT IDENTIFIER,
+		signature							BIT STRING
 	}
 
 	UnauthenticatedDevicePolicy ::= SEQUENCE {
 		-- Indicates whether a device can communicate with an
 		-- unauthenticated device
-		mayCommunicate					BOOLEAN,
+		mayCommunicate						BOOLEAN,
 		-- Indicates when a device should ask for authentication of
 		-- the other device
-		requestAuthentication			RequestAuthenticationPolicy,	
+		requestAuthentication				RequestAuthenticationPolicy,	
 		-- If authentication requests are recurring, indicates the
 		-- interval at which the device should ask, in seconds. Device
 		-- won’t ask if already authenticated.
@@ -431,7 +431,7 @@ DEFINITIONS ::= BEGIN
 		-- remains authenticated for the duration of validity of the
 		-- certificate. Required if requestAuthentication is
 		-- recurring(2)
-		requestAuthenticationInterval	INTEGER OPTIONAL
+		requestAuthenticationInterval		INTEGER OPTIONAL
 	}
 	
 	UnauthorizedAssociationPolicy ::= SEQUENCE {
@@ -576,12 +576,12 @@ DEFINITIONS ::= BEGIN
 
 	UserRoleInfo ::= SEQUENCE { -- contains the role information blob
 		-- IEC62351 specific parameter
-		userRole              		SEQUENCE SIZE (1..MAX) OF RoleID
-		aor                   		UTF8String (SIZE(1..64)),
-		revision              		INTEGER (0..255),
-		roleDefinition        		UTF8String (0..23),
+		userRole              			SEQUENCE SIZE (1..MAX) OF RoleID
+		aor                   			UTF8String (SIZE(1..64)),
+		revision              			INTEGER (0..255),
+		roleDefinition        			UTF8String (0..23),
 		-- optional fields to be used within IEEE 1815 and IEC60870-5
-		operation             		Operation OPTIONAL,
+		operation             			Operation OPTIONAL,
 		statusChangeSequenceNumber  	INTEGER (0..4294967295) OPTIONAL,
 	}
 
@@ -593,6 +593,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20200721(20200721) }
+	Version ::= INTEGER { v20201009(20201009) }
 END
 
