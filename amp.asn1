@@ -402,7 +402,7 @@ DEFINITIONS ::= BEGIN
 	}
 
 	RoutingTableEntry ::= SEQUENCE {
-		commonName						CommonName,
+		name							DistinguishedName,
 		-- certificate was verified - the device is authentic
 		trusted							BOOLEAN,
 		-- certificate of the device that reported this entry
