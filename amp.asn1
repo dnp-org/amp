@@ -393,6 +393,8 @@ DEFINITIONS ::= BEGIN
 	DefaultAccessPolicy ::= SEQUENCE {
 		defaultRoles						IECUserRoles
 	}
+
+	Fingerprint ::= Hash
 	
 	Hash ::= SEQUENCE {
 		algorithm						OBJECT IDENTIFIER,
@@ -405,7 +407,9 @@ DEFINITIONS ::= BEGIN
 		trusted							BOOLEAN,
 		-- certificate of the device that reported this entry
 		-- to us (and every device in between) is verified
-		trustedSource					BOOLEAN
+		trustedSource						BOOLEAN,
+		-- hash of the device's public key (the algorithm should always be SHA256)
+		fingerprint						Fingerprint
 	}
 
 	Signature ::= SEQUENCE {
