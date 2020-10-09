@@ -23,7 +23,7 @@ DEFINITIONS ::= BEGIN
 	AMPPDU ::= SEQUENCE {
 		version								Version DEFAULT v20200721,
 		sequenceNumber						INTEGER DEFAULT 0,
-		— if targetName is absent, the message targets the Authority.
+		— if address.targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
 		address								Address,
 		payload								AMPPDUPayload,
