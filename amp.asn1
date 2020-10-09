@@ -349,7 +349,7 @@ DEFINITIONS ::= BEGIN
 		deviceName				[1] IMPLICIT DistinguishedName
 	}
 
-	AssocationName ::= SEQUENCE {
+	AssociationName ::= SEQUENCE {
 		masterCommonName				CommonName,
 		outstationCommonName			CommonName,
 		aid							INTEGER OPTIONAL,
