@@ -21,8 +21,8 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								Version DEFAULT v20200721,
-		sequenceNumber						INTEGER DEFAULT 0,
+		version								[0] IMPLICIT Version DEFAULT v20201016,
+		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		— if address.targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
 		address								Address,
@@ -414,7 +414,7 @@ DEFINITIONS ::= BEGIN
 
 	Signature ::= SEQUENCE {
 		algorithm							OBJECT IDENTIFIER,
-		signature							BIT STRING
+		signatureValue						BIT STRING
 	}
 
 	UnauthenticatedDevicePolicy ::= SEQUENCE {
@@ -593,6 +593,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20201009(20201009) }
+	Version ::= INTEGER { v20201016(20201016) }
 END
 
