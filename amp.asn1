@@ -21,7 +21,7 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20201016,
+		version								[0] IMPLICIT Version DEFAULT v20201021,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		— if address.targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
@@ -305,8 +305,13 @@ DEFINITIONS ::= BEGIN
 	-- a remote device restarts, the local version of their routing
 	-- table should be set to 0.
 	-- A routing table with version number 0 shall always be empty.
+	-- The newTable flag shall be set when the device has never reported
+	-- on the status of this table to the requested before - e.g. after
+	-- restart. Note that this requires the device to keep track of who
+	-- it has communicated the status of the table to.
 	RoutingTableStatus ::= SEQUENCE {
-		tableVersion						INTEGER
+		tableVersion						INTEGER,
+		newTable							BOOLEAN
 	}
 	
 	-- Sent by a device or the Authority to request the current
@@ -593,6 +598,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20201016(20201016) }
+	Version ::= INTEGER { v20201021(20201021) }
 END
 
