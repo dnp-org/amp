@@ -25,9 +25,9 @@ DEFINITIONS ::= BEGIN
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		— if address.targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
-		address								Address,
-		payload								AMPPDUPayload,
-		signature							Signature
+		address								[2] IMPLICIT	Address,
+		payload								[3] IMPLICIT	AMPPDUPayload,
+		signature							[4] IMPLICIT	Signature
 	}
 	
 -- ===================================================================
