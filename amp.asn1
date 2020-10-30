@@ -21,7 +21,7 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20201021,
+		version								[0] IMPLICIT Version DEFAULT v20201030,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		— if address.targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
@@ -125,9 +125,7 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	-- Sent by the Authority in response to an 
-	-- AssociationAuthorizationRequest or a 
-	-- DeviceVerificationRequest from a device, about a device that
-	-- it is not authorized to communicate with.
+	-- AssociationAuthorizationRequest
 	-- May also be sent by the Authority if it, for any reason, decides
 	-- to revoke authorization for an association.
 	-- Effectively, the Master can request the authorization and receive
@@ -137,7 +135,7 @@ DEFINITIONS ::= BEGIN
 	AssociationAuthorizationStatus ::= SEQUENCE {
 		associationName						AssociationName,
 		authorization						AssociationAuthorization,
-		associationAttributes				Certificate
+		associationAttributes				Certificate	OPTIONAL
 	}
 	
 	CACertificate ::= SEQUENCE {
@@ -598,6 +596,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20201021(20201021) }
+	Version ::= INTEGER { v20201030(20201030) }
 END
 
