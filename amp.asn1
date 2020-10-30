@@ -347,8 +347,10 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- supporting types
 -- ===================================================================
-	Address ::= CHOICE {
+	Address ::= SEQUENCE {
+		-- "to" address
 		targetName							[0] IMPLICIT DistinguishedName,
+		-- "from" address
 		deviceName							[1] IMPLICIT DistinguishedName
 	}
 
