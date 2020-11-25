@@ -21,13 +21,14 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20201030,
+		version								[0] IMPLICIT Version DEFAULT v20201125,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		— if address.targetName is absent, the message targets the Authority.
 		— If present, the message SHALL be signed by the Authority
 		address								[2] IMPLICIT	Address,
 		payload								[3] IMPLICIT	AMPPDUPayload,
-		signature							[4] IMPLICIT	Signature
+		challengeData						[4] IMPLICIT	OCTET STRING OPTIONAL,
+		signature							[5] IMPLICIT	Signature
 	}
 	
 -- ===================================================================
@@ -147,16 +148,12 @@ DEFINITIONS ::= BEGIN
 	}
 	
 	Challenge ::= SEQUENCE {
-		challengedMessageType				MessageType,
-		challengedMessageHash				Hash,
-		challengeData						OCTET STRING
-	}
-	
-	ChallengeResponse ::= SEQUENCE {
-		challengedMessageType				MessageType,
+		challengedMessageType				ChallengeableMessageType,
 		challengedMessageHash				Hash
 	}
 	
+	ChallengeResponse ::= Challenge
+
 	-- Sent by an Authority or a device to convey a device certificate
 	DeviceCertificate ::= SEQUENCE {
 		certificate							Certificate
@@ -506,28 +503,15 @@ DEFINITIONS ::= BEGIN
 		verification-failed(4)
 	}
 	
-	MessageType ::= INTEGER {
+	ChallengeableMessageType ::= INTEGER {
 		-- other(0) shall not be used for the message type. 
 		other(0),
 		-- These values are used to identify a message in a 
 		-- Challenge or a ChallengeResponse
-		association-authorization-request(1),
 		association-authorization-status(2),
-		challenge(3),
-		challenge-response(4),
 		device-certificate(5),
-		device-certificate-request(6),
-		device-revocation(7),
 		device-status(8),
-		device-verification-request(9),
-		device-verification-response(10),
-		routing-table(11),
-		routing-table-confirmation(12),
-		routing-table-request(13),
-		routing-table-status(14),
-		routing-table-statusRequest(15),
 		routing-table-update(16),
-		routing-table-update-confirmation(17)
 	}
 	
 	RequestAuthenticationPolicy ::= INTEGER {
@@ -598,6 +582,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20201030(20201030) }
+	Version ::= INTEGER { v20201125(20201125) }
 END
 
