@@ -64,8 +64,8 @@ DEFINITIONS ::= BEGIN
 			RoutingTableUpdateConfirmation,
 		deviceCertificateRequest			[8]		IMPLICIT
 			DeviceCertificateRequest,
-		deviceCertificate					[9]		IMPLICIT
-			DeviceCertificate,
+		deviceCertificateResponse			[9]		IMPLICIT
+			DeviceCertificateResponse,
 		challenge							[10]	IMPLICIT
 			Challenge,
 		challengeResponse					[11]	IMPLICIT
@@ -97,8 +97,8 @@ DEFINITIONS ::= BEGIN
 			RoutingTableUpdateConfirmation,
 		deviceCertificateRequest			[9]		IMPLICIT
 			DeviceCertificateRequest,
-		deviceCertificate					[10]	IMPLICIT
-			DeviceCertificate,
+		deviceCertificateResponse			[10]	IMPLICIT
+			DeviceCertificateResponse,
 		challenge							[11]	IMPLICIT
 			Challenge,
 		challengeResponse					[12]	IMPLICIT
@@ -155,11 +155,12 @@ DEFINITIONS ::= BEGIN
 	ChallengeResponse ::= Challenge
 
 	-- Sent by an Authority or a device to convey a device certificate
-	DeviceCertificate ::= SEQUENCE {
-		certificate							Certificate
+	DeviceCertificateResponse ::= SEQUENCE {
+		certificate							Certificate OPTIONAL,
+		certificateStatus					CertificateStatus
 	}
 	
-	-- Sent by an Authority or a device to obtain its certificate
+	-- Sent by an Authority or a device to obtain a certificate
 	DeviceCertificateRequest ::= SEQUENCE {
 		deviceCommonName					CommonName
 	}
@@ -483,7 +484,14 @@ DEFINITIONS ::= BEGIN
 		recurring(1),
 		never(2)
 	}
-	
+
+	CertificateStatus ::= INTEGER {
+		other(0),
+		good(1),
+		revoked(2),
+		unknown(3)
+	}
+
 	DeviceVerificationStatus ::= INTEGER {
 		-- some status other than the following. Should not be used
 		-- except as a place-holder. Shall not be sent over the wire
