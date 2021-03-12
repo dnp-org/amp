@@ -189,9 +189,6 @@ DEFINITIONS ::= BEGIN
 	--   Authority sends a DeviceVerificationResponse with a
 	--   unknown-certificate status mutually exclusive with all 
 	--   other status bits.
-	-- - "you are not authorized to talk to this device"
-	--   Authority sends an AssociationAuthorizationResponse and  
-	--   MAY send DeviceVerificationResponse
 	-- - verified
 	--   Authority sends a DeviceVerificationResponse with a verified 
 	--   status may be combined with revoked for a valid cert of a
