@@ -452,12 +452,9 @@ DEFINITIONS ::= BEGIN
 		-- explicitly denied. Whether devices are permitted to
 		-- communicate is a local policy matter.
 		unauthorized(2),	
-		-- the association has previously been authorized to exist but
-		-- has since been revoked. Devices shall not communicate
-		revoked(3),
 		-- the association is not authorized. Devices shall not
 		-- communicate
-		denied(4)
+		denied(3)
 	}
 	
 	AuthenticationExpirationCommunicationPolicy ::= INTEGER {
