@@ -116,23 +116,27 @@ DEFINITIONS ::= BEGIN
 	-- AssociationAuthorizationStatus unless the device making the 
 	-- request has been revoked or the signature on the message does
 	-- not verify
-	-- The Master shall initiate this request if either:
-	-- - its policies require it to do so, or
-	-- - it receives an AssociationAuthorizationRequest from the
-	--  Outstation at the other end of the MOA and cannot present
-	--  a valid AssociationAuthorization.
+	-- The Device shall initiate this request if its policies require
+	-- it to do so.
+	-- The peerFingerprint is the fingerprint of the certificate of the
+	-- other device in the Association.
+	-- the associationAttributeHash is a hash of the attribute certificate 
+	-- that describes the association, if available. Devices that have this
+	-- information SHALL include the hash in the authorization request.
 	AssociationAuthorizationRequest ::= SEQUENCE {
-		associationName						AssociationName
+		associationName						AssociationName,
+		peerFingerprint						Fingerprint,
+		associationAttributeHash			Hash
 	}
 	
 	-- Sent by the Authority in response to an 
 	-- AssociationAuthorizationRequest
 	-- May also be sent by the Authority if it, for any reason, decides
 	-- to revoke authorization for an association.
-	-- Effectively, the Master can request the authorization and receive
-	-- it from the Authority. The Master can then forward the
-	-- authorization to the Outstation, which should it be interested
-	-- in knowing that they're allowed to talk.
+	-- If sent in response to an AssociationAuthorizationRequest that contained
+	-- an associationAttributeHash for the current associationAttributes, the
+	-- Authority MAY omit sending the associationAttributes to save
+	-- bandwidth.
 	AssociationAuthorizationStatus ::= SEQUENCE {
 		associationName						AssociationName,
 		authorization						AssociationAuthorization,
@@ -451,6 +455,8 @@ DEFINITIONS ::= BEGIN
 		-- the association is not authorized to exist, but also not
 		-- explicitly denied. Whether devices are permitted to
 		-- communicate is a local policy matter.
+		-- This state doesn't go over the wire: the Authority cannot 
+		-- give this state.
 		unauthorized(2),	
 		-- the association is not authorized. Devices shall not
 		-- communicate
