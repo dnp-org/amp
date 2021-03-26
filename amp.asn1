@@ -143,11 +143,11 @@ DEFINITIONS ::= BEGIN
 		associationAttributes				Certificate	OPTIONAL
 	}
 	
-	CACertificate ::= SEQUENCE {
+	CACertificateChain ::= SEQUENCE {
 		certificates						SEQUENCE OF Certificate
 	}
 	
-	CACertificateRequest ::= SEQUENCE {
+	CACertificateChainRequest ::= SEQUENCE {
 		issuerName							DistinguishedName
 	}
 	
