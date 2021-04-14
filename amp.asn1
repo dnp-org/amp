@@ -21,13 +21,13 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20201125,
+		version								[0] IMPLICIT Version DEFAULT v20210331,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
-		— if address.targetName is absent, the message targets the Authority.
-		— If present, the message SHALL be signed by the Authority
 		address								[2] IMPLICIT	Address,
 		payload								[3] IMPLICIT	AMPPDUPayload,
 		challengeData						[4] IMPLICIT	OCTET STRING OPTIONAL,
+		-- all messages are signed by the sender. Devices from the Authority have their
+		-- signatures verified at every hop.
 		signature							[5] IMPLICIT	Signature
 	}
 	
@@ -73,7 +73,11 @@ DEFINITIONS ::= BEGIN
 		policies							[12]	IMPLICIT
 			Policies,
 		caCertificateChain					[13]	IMPLICIT
-			CACertificateChain
+			CACertificateChain,
+		hello								[14]	IMPLICIT
+			Hello,
+		policiesRequest						[15]	IMPLICIT
+			PoliciesRequest
 	}
 	
 	DeviceMessage ::= CHOICE {
@@ -104,7 +108,9 @@ DEFINITIONS ::= BEGIN
 		challengeResponse					[12]	IMPLICIT
 			ChallengeResponse,
 		caCertificateChainRequest			[13]	IMPLICIT
-			CACertificateChainRequest
+			CACertificateChainRequest,
+		policies							[14]	IMPLICIT
+			Policies
 	}
 	
 -- -------------------------------------------------------------------
@@ -186,6 +192,10 @@ DEFINITIONS ::= BEGIN
 	
 	-- Sent by the Authority in response to a DeviceVerificationRequest
 	DeviceVerificationResponse ::= DeviceStatus
+
+	-- Sent by the Authority when it comes on-line to indicate to devices
+	-- that, if they have something to say/ask, now is the time to do it.
+	Hello ::= NULL
 	
 	-- Sent by a device to request verification of another device. 
 	-- Possible responses include:
@@ -215,6 +225,10 @@ DEFINITIONS ::= BEGIN
 	-- Maintained by devices and sent by the Authority, the policies
 	-- determine the behavior of the device is various
 	-- security-related circumstances.
+	-- Sent by a device in response to a PoliciesRequest message, or 
+	-- whenever the local policies change other than by receiving the Policies
+	-- message. Note that if the policies are changed out-of-band, the
+	-- version SHALL bet set to 0.
 	Policies ::= SEQUENCE {
 		-- Non-negative integer version of the policies. Must be
 		-- strictly greater than any previous version of the policy
@@ -232,6 +246,9 @@ DEFINITIONS ::= BEGIN
 		authoritySignatureVerificationPolicy
 											AuthoritySignatureVerificationPolicy
 	}
+	
+	-- Sent by the Authority when it wants to audit the current policies on a device
+	PoliciesRequest ::= NULL
 	
 	RoutingConfiguration ::= SEQUENCE {
 		-- number of seconds between updates
