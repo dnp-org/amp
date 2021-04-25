@@ -21,7 +21,7 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20210331,
+		version								[0] IMPLICIT Version DEFAULT v20210423,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		address								[2] IMPLICIT	Address,
 		payload								[3] IMPLICIT	AMPPDUPayload,
@@ -77,7 +77,9 @@ DEFINITIONS ::= BEGIN
 		hello								[14]	IMPLICIT
 			Hello,
 		policiesRequest						[15]	IMPLICIT
-			PoliciesRequest
+			PoliciesRequest,
+		authorityCertificateChange			[16]	IMPLICIT
+			AuthorityCertificateChange
 	}
 	
 	DeviceMessage ::= CHOICE {
@@ -110,12 +112,19 @@ DEFINITIONS ::= BEGIN
 		caCertificateChainRequest			[13]	IMPLICIT
 			CACertificateChainRequest,
 		policies							[14]	IMPLICIT
-			Policies
+			Policies,
+		acknowlegement						[15]	IMPLICIT
+			Acknowledgement
 	}
 	
 -- -------------------------------------------------------------------
 -- service request types
 -- -------------------------------------------------------------------
+	-- Sent by the Device when it gets a new set of policies or a new
+	-- authority certificate (AuthorityCertificateChange) from the Authority.
+	-- Authority will re-send the change until it is blue in the face otherwise.
+	Acknowledgement ::= Challenge;
+
 	-- Sent by a Device to an Authority to request authorization to
 	-- communicate on a MOA.
 	-- The Authority SHALL respond with an 
@@ -148,6 +157,10 @@ DEFINITIONS ::= BEGIN
 		authorization						AssociationAuthorization,
 		associationAttributes				Certificate	OPTIONAL
 	}
+
+	-- Sent by the Authority if it is either changing its certificate or being
+	-- replaced by another Authority. Requires acknowledgement from the devices
+	AuthorityCertificateChange ::= CACertificateChain;
 	
 	CACertificateChain ::= SEQUENCE {
 		certificates						SEQUENCE OF Certificate
@@ -226,9 +239,14 @@ DEFINITIONS ::= BEGIN
 	-- determine the behavior of the device is various
 	-- security-related circumstances.
 	-- Sent by a device in response to a PoliciesRequest message, or 
-	-- whenever the local policies change other than by receiving the Policies
-	-- message. Note that if the policies are changed out-of-band, the
-	-- version SHALL bet set to 0.
+	-- whenever the local policies version is 0.
+	-- Note that if the policies are changed out-of-band, the
+	-- version SHALL bet set to 0 and the device will start periodically
+	-- sending its policies to the Authority until they are overriden
+	-- by the Authority.
+	-- The device SHALL be configurable for the interval for sending 
+	-- the policies to the Authority when the version is 0. That interval
+	-- SHALL NOT be infinite if the device has an Authority.
 	Policies ::= SEQUENCE {
 		-- Non-negative integer version of the policies. Must be
 		-- strictly greater than any previous version of the policy
