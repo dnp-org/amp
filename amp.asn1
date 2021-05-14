@@ -49,9 +49,9 @@ DEFINITIONS ::= BEGIN
 		associationAuthorizationStatus		[0]		IMPLICIT	
 			AssociationAuthorizationStatus,
 		deviceRevocation					[1]		IMPLICIT
-			DeviceRevocation,
+			DeviceRevocation,				-- ACK, Challenged?
 		deviceStatus						[2]		IMPLICIT
-			DeviceStatus,
+			DeviceStatus,					-- Challenged if not requested, ACK if not requested (after the challenge has succeeded)
 		deviceVerificationResponse			[3]		IMPLICIT
 			DeviceVerificationResponse,
 		routingTableRequest					[4]		IMPLICIT
@@ -71,7 +71,7 @@ DEFINITIONS ::= BEGIN
 		challengeResponse					[11]	IMPLICIT
 			ChallengeResponse,
 		policies							[12]	IMPLICIT
-			Policies,
+			Policies, -- ACK, Challenged
 		caCertificateChain					[13]	IMPLICIT
 			CACertificateChain,
 		hello								[14]	IMPLICIT
@@ -79,7 +79,7 @@ DEFINITIONS ::= BEGIN
 		policiesRequest						[15]	IMPLICIT
 			PoliciesRequest,
 		authorityCertificateChange			[16]	IMPLICIT
-			AuthorityCertificateChange
+			AuthorityCertificateChange		-- ACK, no retry, warn the user of no ack received
 	}
 	
 	DeviceMessage ::= CHOICE {
