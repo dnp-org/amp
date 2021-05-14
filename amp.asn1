@@ -263,6 +263,8 @@ DEFINITIONS ::= BEGIN
 		authenticationExpirationPolicy		AuthenticationExpirationPolicy,
 		authoritySignatureVerificationPolicy
 											AuthoritySignatureVerificationPolicy
+
+		-- TODO: need time-outs for device verification periodicity, boolean to indicate whether to verify device when communications are established
 	}
 	
 	-- Sent by the Authority when it wants to audit the current policies on a device
