@@ -608,10 +608,15 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- "borrowed" types
 -- ===================================================================
-	DistinguishedName ::= SEQUENCE {
-		-- TODO
-	}
-	
+
+-- -------------------------------------------------------------------
+-- from RFC 5912
+-- -------------------------------------------------------------------
+	DistinguishedName ::= as defined in RFC 5912
+
+-- -------------------------------------------------------------------
+-- from IEC 62351-8
+-- -------------------------------------------------------------------
 	IECUserRoles ::= SEQUENCE OF UserRoleInfo
 
 	UserRoleInfo ::= SEQUENCE { -- contains the role information blob
@@ -628,6 +633,10 @@ DEFINITIONS ::= BEGIN
 	RoleId ::= INTEGER (-32768..32767)
 
 	Operation ::= ENUMERATED { add (1), delete (2), change (3) }
+
+-- ===================================================================
+-- syntax specification versions
+-- ===================================================================
 	
 	-- unofficial versions are denoted with datecodes. This leaves
 	-- official versions with over 20,000,000 possible versions
