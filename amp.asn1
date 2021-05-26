@@ -21,7 +21,7 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20210423,
+		version								[0] IMPLICIT Version DEFAULT v20210526,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		address								[2] IMPLICIT	Address,
 		payload								[3] IMPLICIT	AMPPDUPayload,
@@ -72,8 +72,8 @@ DEFINITIONS ::= BEGIN
 			ChallengeResponse,
 		policies							[12]	IMPLICIT
 			Policies, -- ACK, Challenged
-		caCertificateChain					[13]	IMPLICIT
-			CACertificateChain,
+		certificateChain					[13]	IMPLICIT
+			CertificateChain,
 		hello								[14]	IMPLICIT
 			Hello,
 		policiesRequest						[15]	IMPLICIT
@@ -109,8 +109,8 @@ DEFINITIONS ::= BEGIN
 			Challenge,
 		challengeResponse					[12]	IMPLICIT
 			ChallengeResponse,
-		caCertificateChainRequest			[13]	IMPLICIT
-			CACertificateChainRequest,
+		certificateChainRequest				[13]	IMPLICIT
+			CertificateChainRequest,
 		-- Per the 2021-05-21 discussions, the device doesn't need an acknowledgement 
 		-- for non-zero-version-number policies, the device will repeat until it gets its
 		-- policies overridden by the Authority. For anything else, the policies are
@@ -165,13 +165,14 @@ DEFINITIONS ::= BEGIN
 
 	-- Sent by the Authority if it is either changing its certificate or being
 	-- replaced by another Authority. Requires acknowledgement from the devices
-	AuthorityCertificateChange ::= CACertificateChain;
+	AuthorityCertificateChange ::= CertificateChain;
 	
-	CACertificateChain ::= SEQUENCE {
-		certificates						SEQUENCE OF Certificate
+	CertificateChain ::= SEQUENCE {
+		caCertificates						SEQUENCE OF Certificate,
+		authorityIdentityCertificate		Certificate
 	}
 	
-	CACertificateChainRequest ::= SEQUENCE {
+	CertificateChainRequest ::= SEQUENCE {
 		issuerName							DistinguishedName
 	}
 	
@@ -242,7 +243,8 @@ DEFINITIONS ::= BEGIN
 	
 	-- Maintained by devices and sent by the Authority, the policies
 	-- determine the behavior of the device is various
-	-- security-related circumstances.
+	-- security-related circumstances, notably when the Authority is not
+	-- available.
 	-- Sent by a device in response to a PoliciesRequest message, or 
 	-- whenever the local policies version is 0.
 	-- Note that if the policies are changed out-of-band, the
@@ -255,11 +257,13 @@ DEFINITIONS ::= BEGIN
 	Policies ::= SEQUENCE {
 		-- Non-negative integer version of the policies. Must be
 		-- strictly greater than any previous version of the policy
-		-- sent by the Authority so it can be validated by the device,
-		-- which shall not accept a policy that is different from its
+		-- sent by the Authority so it can be validated by the device.
+		-- The device shall not accept a policy that is different from its
 		-- current policy if its version number is smaller than or
-		-- equal to that of its current policy. Built-in default
-		-- configurations have version 0.
+		-- equal to that of its current policy but shall challenge such a 
+		-- policy and apply it only if the challenge succeeds. Any successful
+		-- change of policy commanded by the Autority shall be acknowledged.
+		-- Built-in default configurations have version 0.
 		version								INTEGER,	
 		unauthorizedAssociationPolicy		UnauthorizedAssociationPolicy,
 		authorizedAssociationPolicy			AuthorizedAssociationPolicy,
@@ -562,6 +566,7 @@ DEFINITIONS ::= BEGIN
 		association-authorization-status(2),
 		device-certificate(5),
 		device-status(8),
+		policies(12),
 		routing-table-update(16),
 	}
 	
@@ -642,6 +647,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20201125(20201125) }
+	Version ::= INTEGER { v20210526(20210526) }
 END
 
