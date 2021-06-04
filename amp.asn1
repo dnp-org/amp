@@ -21,7 +21,7 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20210526,
+		version								[0] IMPLICIT Version DEFAULT v20210604,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		address								[2] IMPLICIT	Address,
 		payload								[3] IMPLICIT	AMPPDUPayload,
@@ -49,9 +49,12 @@ DEFINITIONS ::= BEGIN
 		associationAuthorizationStatus		[0]		IMPLICIT	
 			AssociationAuthorizationStatus,
 		deviceRevocation					[1]		IMPLICIT
-			DeviceRevocation,				-- ACK, Challenged?
+			DeviceRevocation,
+			-- ACK, Challenged
 		deviceStatus						[2]		IMPLICIT
-			DeviceStatus,					-- Challenged if not requested, ACK if not requested (after the challenge has succeeded)
+			DeviceStatus,
+			-- Challenged if not requested, ACK if not requested (after
+			-- the challenge has succeeded)
 		deviceVerificationResponse			[3]		IMPLICIT
 			DeviceVerificationResponse,
 		routingTableRequest					[4]		IMPLICIT
@@ -72,14 +75,16 @@ DEFINITIONS ::= BEGIN
 			ChallengeResponse,
 		policies							[12]	IMPLICIT
 			Policies, -- ACK, Challenged
-		certificateChain					[13]	IMPLICIT
-			CertificateChain,
-		hello								[14]	IMPLICIT
+		hello								[13]	IMPLICIT
 			Hello,
-		policiesRequest						[15]	IMPLICIT
+		policiesRequest						[14]	IMPLICIT
 			PoliciesRequest,
-		authorityCertificateChange			[16]	IMPLICIT
-			AuthorityCertificateChange		-- ACK, no retry, warn the user of no ack received
+		authorityCertificate				[15]	IMPLICIT
+			CertificateChain,
+			-- ACK, no retry, warn the user if no ack received
+		deviceCertificate					[16]	IMPLICIT
+			CertificateChain
+			-- ACK, no retry, warn the user if no ack received
 	}
 	
 	DeviceMessage ::= CHOICE {
@@ -146,7 +151,7 @@ DEFINITIONS ::= BEGIN
 	AssociationAuthorizationRequest ::= SEQUENCE {
 		associationName						AssociationName,
 		peerFingerprint						Fingerprint,
-		associationAttributeHash			Hash
+		associationAttributeHash			Hash OPTIONAL
 	}
 	
 	-- Sent by the Authority in response to an 
@@ -163,13 +168,9 @@ DEFINITIONS ::= BEGIN
 		associationAttributes				Certificate	OPTIONAL
 	}
 
-	-- Sent by the Authority if it is either changing its certificate or being
-	-- replaced by another Authority. Requires acknowledgement from the devices
-	AuthorityCertificateChange ::= CertificateChain;
-	
 	CertificateChain ::= SEQUENCE {
 		caCertificates						SEQUENCE OF Certificate,
-		authorityIdentityCertificate		Certificate
+		identityCertificate					Certificate
 	}
 	
 	CertificateChainRequest ::= SEQUENCE {
@@ -184,9 +185,9 @@ DEFINITIONS ::= BEGIN
 	ChallengeResponse ::= Challenge
 
 	-- Sent by an Authority or a device to convey a device certificate
-	DeviceCertificateResponse ::= SEQUENCE {
-		certificate							Certificate OPTIONAL,
-		certificateStatus					CertificateStatus
+	DeviceCertificateResponse ::= CHOICE {
+		certificateChain				[0] CertificateChain,
+		certificateStatus				[1] CertificateStatus
 	}
 	
 	-- Sent by an Authority or a device to obtain a certificate
@@ -647,6 +648,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20210526(20210526) }
+	Version ::= INTEGER { v20210604(20210604) }
 END
 
