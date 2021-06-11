@@ -21,7 +21,7 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
 	AMPPDU ::= SEQUENCE {
-		version								[0] IMPLICIT Version DEFAULT v20210604,
+		version								[0] IMPLICIT Version DEFAULT v20210611,
 		sequenceNumber						[1] IMPLICIT INTEGER DEFAULT 0,
 		address								[2] IMPLICIT	Address,
 		payload								[3] IMPLICIT	AMPPDUPayload,
@@ -66,9 +66,9 @@ DEFINITIONS ::= BEGIN
 		routingTableUpdateConfirmation		[7]		IMPLICIT
 			RoutingTableUpdateConfirmation,
 		deviceCertificateRequest			[8]		IMPLICIT
-			DeviceCertificateRequest,
-		deviceCertificateResponse			[9]		IMPLICIT
-			DeviceCertificateResponse,
+			CertificateRequest,
+		certificateResponse					[9]		IMPLICIT
+			CertificateResponse,
 		challenge							[10]	IMPLICIT
 			Challenge,
 		challengeResponse					[11]	IMPLICIT
@@ -106,10 +106,10 @@ DEFINITIONS ::= BEGIN
 			RoutingTableConfirmation,
 		routingTableUpdateConfirmation		[8]		IMPLICIT
 			RoutingTableUpdateConfirmation,
-		deviceCertificateRequest			[9]		IMPLICIT
-			DeviceCertificateRequest,
-		deviceCertificateResponse			[10]	IMPLICIT
-			DeviceCertificateResponse,
+		certificateRequest					[9]		IMPLICIT
+			CertificateRequest,
+		certificateResponse					[10]	IMPLICIT
+			CertificateResponse,
 		challenge							[11]	IMPLICIT
 			Challenge,
 		challengeResponse					[12]	IMPLICIT
@@ -133,6 +133,8 @@ DEFINITIONS ::= BEGIN
 	-- Sent by the Device when it gets a new set of policies or a new
 	-- authority certificate (AuthorityCertificateChange) from the Authority.
 	-- Authority will re-send the change until it is blue in the face otherwise.
+    -- Note: the acknowledgement of a challenged message acknowledges the
+	-- original message, not the challenge response.
 	Acknowledgement ::= Challenge;
 
 	-- Sent by a Device to an Authority to request authorization to
@@ -173,8 +175,9 @@ DEFINITIONS ::= BEGIN
 		identityCertificate					Certificate
 	}
 	
-	CertificateChainRequest ::= SEQUENCE {
-		issuerName							DistinguishedName
+	CertificateChainRequest ::= CHOICE {
+		issuerName							[0] DistinguishedName, -- for use to ask for a chain leading up to an Attribute Certificate
+		subjectName							[1] DistinguishedName  -- for use to ask for a chain leading up to an Identity Certificate
 	}
 	
 	Challenge ::= SEQUENCE {
@@ -184,15 +187,10 @@ DEFINITIONS ::= BEGIN
 	
 	ChallengeResponse ::= Challenge
 
-	-- Sent by an Authority or a device to convey a device certificate
-	DeviceCertificateResponse ::= CHOICE {
+	-- Sent by an Authority or a device to convey a certificate, including the chain leading up to it, or its status if it's bad
+	CertificateResponse ::= CHOICE {
 		certificateChain				[0] CertificateChain,
 		certificateStatus				[1] CertificateStatus
-	}
-	
-	-- Sent by an Authority or a device to obtain a certificate
-	DeviceCertificateRequest ::= SEQUENCE {
-		deviceCommonName					CommonName
 	}
 	
 	-- Broadcast by the Authority to all devices to let them know a
@@ -648,6 +646,6 @@ DEFINITIONS ::= BEGIN
 	-- official versions with over 20,000,000 possible versions
 	-- before there is a possibility of collision, and clearly
 	-- shows the difference between official and unofficial versions.
-	Version ::= INTEGER { v20210604(20210604) }
+	Version ::= INTEGER { v20210611(20210611) }
 END
 
