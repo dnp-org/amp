@@ -53,8 +53,7 @@ DEFINITIONS ::= BEGIN
             -- ACK, Challenged
         deviceStatus                        [2]     IMPLICIT
             DeviceStatus,
-            -- Challenged if not requested, ACK if not requested (after
-            -- the challenge has succeeded)
+            -- Challenged, ACK
         deviceVerificationResponse          [3]     IMPLICIT
             DeviceVerificationResponse,
         routingTableRequest                 [4]     IMPLICIT
@@ -65,7 +64,7 @@ DEFINITIONS ::= BEGIN
             RoutingTableConfirmation,
         routingTableUpdateConfirmation      [7]     IMPLICIT
             RoutingTableUpdateConfirmation,
-        deviceCertificateRequest            [8]     IMPLICIT
+        certificateRequest                  [8]     IMPLICIT
             CertificateRequest,
         certificateResponse                 [9]     IMPLICIT
             CertificateResponse,
@@ -77,14 +76,12 @@ DEFINITIONS ::= BEGIN
             Policies, -- ACK, Challenged
         hello                               [13]    IMPLICIT
             Hello,
-        policiesRequest                     [14]    IMPLICIT
-            PoliciesRequest,
-        authorityCertificate                [15]    IMPLICIT
-            CertificateChain,
-            -- ACK, no retry, warn the user if no ack received
-        deviceCertificate                   [16]    IMPLICIT
-            CertificateChain
-            -- ACK, no retry, warn the user if no ack received
+        authorityCertificate                [14]    IMPLICIT
+            AuthorityCertificate,
+            -- ACK, Challenge
+        deviceCertificate                   [15]    IMPLICIT
+            DeviceCertificate
+            -- ACK, Challenge
     }
     
     DeviceMessage ::= CHOICE {
@@ -114,16 +111,14 @@ DEFINITIONS ::= BEGIN
             Challenge,
         challengeResponse                   [12]    IMPLICIT
             ChallengeResponse,
-        certificateChainRequest             [13]    IMPLICIT
-            CertificateChainRequest,
         -- Per the 2021-05-21 discussions, the device doesn't need an acknowledgement 
         -- for non-zero-version-number policies, the device will repeat until it gets its
         -- policies overridden by the Authority. For anything else, the policies are
         -- already set by the Authority, so they're either OK, or the Authority will
         -- not have received an Ack for a recent change, in which case *it* will repeat.
-        policies                            [14]    IMPLICIT
+        policies                            [13]    IMPLICIT
             Policies,
-        acknowlegement                      [15]    IMPLICIT
+        acknowlegement                      [14]    IMPLICIT
             Acknowledgement
     }
     
@@ -135,7 +130,9 @@ DEFINITIONS ::= BEGIN
     -- Authority will re-send the change until it is blue in the face otherwise.
     -- Note: the acknowledgement of a challenged message acknowledges the
     -- original message, not the challenge response.
-    Acknowledgement ::= Challenge;
+    Acknowledgement ::= Challenge
+
+    AuthorityCertificate ::= CertificateChain
 
     -- Sent by a Device to an Authority to request authorization to
     -- communicate on a MOA.
@@ -175,9 +172,15 @@ DEFINITIONS ::= BEGIN
         identityCertificate                 Certificate
     }
     
-    CertificateChainRequest ::= CHOICE {
-        issuerName                          [0] DistinguishedName, -- for use to ask for a chain leading up to an Attribute Certificate
-        subjectName                         [1] DistinguishedName  -- for use to ask for a chain leading up to an Identity Certificate
+    CertificateRequest ::= CHOICE {
+        issuerName                          [0] DistinguishedName,  -- for use to ask for a chain leading up to an Attribute Certificate
+        subjectName                         [1] CommonName          -- for use to ask for a chain leading up to an Identity Certificate
+    }
+    
+    -- Sent by an Authority or a device to convey a certificate, including the chain leading up to it, or its status if it's bad
+    CertificateResponse ::= CHOICE {
+        certificateChain                [0] CertificateChain,
+        certificateStatus               [1] CertificateStatus
     }
     
     Challenge ::= SEQUENCE {
@@ -187,12 +190,8 @@ DEFINITIONS ::= BEGIN
     
     ChallengeResponse ::= Challenge
 
-    -- Sent by an Authority or a device to convey a certificate, including the chain leading up to it, or its status if it's bad
-    CertificateResponse ::= CHOICE {
-        certificateChain                [0] CertificateChain,
-        certificateStatus               [1] CertificateStatus
-    }
-    
+    DeviceCertificate ::= CertificateChain
+
     -- Broadcast by the Authority to all devices to let them know a
     -- device has been revoked for some reason
     DeviceRevocation ::= SEQUENCE {
@@ -276,9 +275,6 @@ DEFINITIONS ::= BEGIN
         --       whether to verify device when communications are established
     }
     
-    -- Sent by the Authority when it wants to audit the current policies on a device
-    PoliciesRequest ::= NULL
-    
     RoutingConfiguration ::= SEQUENCE {
         -- number of seconds between updates
         routingTableUpdatePeriod            INTEGER,
@@ -359,9 +355,7 @@ DEFINITIONS ::= BEGIN
     
     -- Sent by a device or the Authority to request the current
     -- status (i.e. version) of the routing table. Has no payload.
-    RoutingTableStatusRequest ::= SEQUENCE {
-        -- no payload for this one
-    }
+    RoutingTableStatusRequest ::= NULL
     
     -- Update for the routing table. May be used (by a device) to
     -- indicate that entries have been added or removed from the
