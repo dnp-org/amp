@@ -21,14 +21,30 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
     AMPPDU ::= SEQUENCE {
-        version                             [0] IMPLICIT    Version DEFAULT v20210611,
+        version                             [0] IMPLICIT    Version,
         sequenceNumber                      [1] IMPLICIT    INTEGER DEFAULT 0,
-        address                             [2] IMPLICIT    Address,
-        payload                             [3] IMPLICIT    AMPPDUPayload,
-        challengeData                       [4] IMPLICIT    OCTET STRING OPTIONAL,
+        -- The priority of this message. Higher-priority messages take
+        -- precedence over lower-priority ones. This allows intermediate
+        -- devices to drop lower-priority messages in favor of higher-
+        -- priority messages if their queues are full and more messages
+        -- from the Authority arrive. 
+        -- Priorities are listed below
+        -- Messages coming up from devices do not have priorities associated
+        -- with them, because they cannot safely be parsed by intermediate 
+        -- devices (which do not have the originating device's public key to
+        -- verify the message with).
+        -- Note: we've tried to keep the number of priorities low to allow for
+        --       an implementation with parallel queues (one per priority). We
+        --       don't dictate the way it should be implemented (we allow a single
+        --       priority queue), but using a small number of priorities allows
+        --       either type of implementation
+        priority                            [2] IMPLICIT    INTEGER(0..3) DEFAULT 0,
+        address                             [3] IMPLICIT    Address,
+        payload                             [4] IMPLICIT    AMPPDUPayload,
+        challengeData                       [5] IMPLICIT    OCTET STRING OPTIONAL,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
-        signature                           [5] IMPLICIT    Signature
+        signature                           [6] IMPLICIT    Signature
     }
     
 -- ===================================================================
@@ -45,43 +61,74 @@ DEFINITIONS ::= BEGIN
         deviceMessage                       [1]     DeviceMessage
     }
     
+    -- Note: for the priorities below, the basic reasoning is this:
+    --       - priority 0 messages will be retried by the Authority if lost, so if they do
+    --         get lost because of communications issues, that's not an issue
+    --       - priority 1 messages affect communications to devices and the view the authority
+    --         has on the system, but don't have a significant operational or security impact
+    --         if lost
+    --       - priority 2 messages would require the device to retry if lost, which could have
+    --         an operational impact (e.g. an association not being permitted to be set up)
+    --       - priority 3 messages have a security impact if lost
+    -- Note: AMQP, when used as a transport between the Authority and the first-hop Master, 
+    --       has its own priority field which, according to version 0.9.2 of the spec, can
+    --       be either 0 or 1 (but is permitted to allow higher values). As we have assigned
+    --       priority 3 to security-impacting messages, our priority 3 maps to AMQP priority 1
+    --       an all other priorities map to AMQP priority 0. That is: in AMQP implementations
+    --       to transport AMP, AMP priority 3 messages shall be sent with AMQP priority 1, all
+    --       other messages shall be sent with AMQP priority 0.
     AuthorityMessage ::= CHOICE {
         associationAuthorizationStatus      [0]     IMPLICIT    
             AssociationAuthorizationStatus,
+            -- priority 2
         deviceRevocation                    [1]     IMPLICIT
             DeviceRevocation,
-            -- ACK, Challenged
+            -- ACK, Challenged, priority 3
         deviceStatus                        [2]     IMPLICIT
             DeviceStatus,
             -- Challenged, ACK
+            -- priority 0
         deviceVerificationResponse          [3]     IMPLICIT
             DeviceVerificationResponse,
+            -- priority 2
         routingTableRequest                 [4]     IMPLICIT
             RoutingTableRequest,
+            -- priority 1
         routingTableStatusRequest           [5]     IMPLICIT
             RoutingTableStatusRequest,
+            -- priority 1
         routingTableConfirmation            [6]     IMPLICIT
             RoutingTableConfirmation,
+            -- priority 1
         routingTableUpdateConfirmation      [7]     IMPLICIT
             RoutingTableUpdateConfirmation,
+            -- priority 1
         certificateRequest                  [8]     IMPLICIT
             CertificateRequest,
+            -- priority 0
         certificateResponse                 [9]     IMPLICIT
             CertificateResponse,
+            -- priority 0
         challenge                           [10]    IMPLICIT
             Challenge,
+            -- priority 0
         challengeResponse                   [11]    IMPLICIT
             ChallengeResponse,
+            -- priority 0
         policies                            [12]    IMPLICIT
             Policies, -- ACK, Challenged
+            -- priority 0
         hello                               [13]    IMPLICIT
             Hello,
+            -- priority 2
         authorityCertificate                [14]    IMPLICIT
             AuthorityCertificate,
-            -- ACK, Challenge
+            -- ACK, Challenge, priority 
+            -- priority 0
         deviceCertificate                   [15]    IMPLICIT
             DeviceCertificate
             -- ACK, Challenge
+            -- priority 0
     }
     
     DeviceMessage ::= CHOICE {
@@ -243,8 +290,7 @@ DEFINITIONS ::= BEGIN
     -- determine the behavior of the device is various
     -- security-related circumstances, notably when the Authority is not
     -- available.
-    -- Sent by a device in response to a PoliciesRequest message, or 
-    -- whenever the local policies version is 0.
+    -- Sent by a device whenever the local policies version is 0.
     -- Note that if the policies are changed out-of-band, the
     -- version SHALL bet set to 0 and the device will start periodically
     -- sending its policies to the Authority until they are overriden
@@ -640,6 +686,6 @@ DEFINITIONS ::= BEGIN
     -- official versions with over 20,000,000 possible versions
     -- before there is a possibility of collision, and clearly
     -- shows the difference between official and unofficial versions.
-    Version ::= INTEGER { v20210611(20210611) }
+    Version ::= INTEGER { v20210730(20210730) }
 END
 
