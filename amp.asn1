@@ -220,8 +220,8 @@ DEFINITIONS ::= BEGIN
     }
     
     CertificateRequest ::= CHOICE {
-        attributeCertificateIssuer          [0] DistinguishedName,  -- for use to ask for a chain leading up to an Attribute Certificate
-        identityCertificateSubject          [1] CommonName          -- for use to ask for a chain leading up to an Identity Certificate
+        attributeCertificateIssuer      [0] DistinguishedName,  -- for use to ask for a chain leading up to an Attribute Certificate
+        identityCertificateSubject      [1] DistinguishedName   -- for use to ask for a chain leading up to an Identity Certificate
     }
     
     -- Sent by an Authority or a device to convey a certificate, including the chain leading up to it, or its status if it's bad
