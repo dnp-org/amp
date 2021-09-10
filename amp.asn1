@@ -436,7 +436,7 @@ DEFINITIONS ::= BEGIN
         -- "to" address
         targetName                          [0] IMPLICIT DistinguishedName,
         -- "from" address
-        deviceName                          [1] IMPLICIT DistinguishedName
+        sourceName                          [1] IMPLICIT DistinguishedName
     }
 
     AssociationName ::= SEQUENCE {
