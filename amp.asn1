@@ -71,7 +71,7 @@ DEFINITIONS ::= BEGIN
         --    32-octet key.
         -- 3. The AES-GCM IV is set to 0.
         encryptedPayload                    [0] OCTET STRING,
-        unencryptedPayload                  [1] UnencryptedAuthorityMessage;
+        unencryptedPayload                  [1] UnencryptedAuthorityMessage
     }
 
     -- the PDU payload: a top-level choice item
@@ -79,7 +79,8 @@ DEFINITIONS ::= BEGIN
         -- messages initiated by the Authority
         authorityMessage                    [0]     AuthorityMessage,
         -- messages initiated by a Device
-        deviceMessage                       [1]     DeviceMessage
+        deviceMessage                       [1]     DeviceMessage,
+        extendedMessage [2] Extension
     }
     
     -- Note: for the priorities below, the basic reasoning is this:
@@ -156,6 +157,7 @@ DEFINITIONS ::= BEGIN
         deviceRevocation                    [1]     IMPLICIT
             DeviceRevocation,
             -- ACK, Challenged, priority 3
+        extendedMessage [2] Extension
     }
     
     DeviceMessage ::= CHOICE {
@@ -283,6 +285,18 @@ DEFINITIONS ::= BEGIN
     
     -- Sent by the Authority in response to a DeviceVerificationRequest
     DeviceVerificationResponse ::= DeviceStatus
+
+    -- Extensions are used by the implementation to extend AMP.
+    -- In order be permissible for use with AMP, the following must be true:
+    -- - the type field contains a valid OID describing the format of the value
+    -- - the syntax of the value shall be well-defined and registered with the User Group
+    -- - no extension shall be used for any message with substantially similar semantics to a message defined in the main protocol
+    -- - registering an extension implies the DNP-UG may adopt it into the main protocol (which means it cannot be used as an extension afterwards)
+    Extension ::= SEQUENCE {
+       type OBJECT IDENTIFIER,
+       critical BOOLEAN,
+       value OCTET STRING
+    }
 
     -- Sent by the Authority when it comes on-line to indicate to devices
     -- that, if they have something to say/ask, now is the time to do it.
