@@ -691,6 +691,14 @@ DEFINITIONS ::= BEGIN
     }
 
 -- ===================================================================
+-- Object identifiers
+-- ===================================================================
+    AMPEvent OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 1 }
+    AMPControllerEvent OBJECT IDENTIFIER ::= { AMPEvent 0 }
+    AMPMasterEvent OBJECT IDENTIFIER ::= { AMPEvent 1 }
+    AMPOutstationEvent OBJECT IDENTIFIER ::= { AMPEvent 2 }
+
+-- ===================================================================
 -- "borrowed" types
 -- ===================================================================
 
