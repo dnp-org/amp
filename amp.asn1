@@ -40,8 +40,10 @@ DEFINITIONS ::= BEGIN
         --       either type of implementation
         priority                            [2] IMPLICIT    INTEGER(0..3) DEFAULT 0,
         address                             [3] IMPLICIT    Address,
-        payload                             [4] IMPLICIT    AMPPDUPayload,
-        challengeData                       [5] IMPLICIT    OCTET STRING OPTIONAL,
+        -- This data shall be random and shall be generated using an SP-800 90A
+        -- compliant RNG.
+        challengeData                       [4] IMPLICIT    OCTET STRING SIZE(32),
+        payload                             [5] IMPLICIT    AMPPDUPayload,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
         signature                           [6] IMPLICIT    Signature
@@ -53,12 +55,32 @@ DEFINITIONS ::= BEGIN
 -- -------------------------------------------------------------------
 -- structural types
 -- -------------------------------------------------------------------
-    -- the PDU payload: a top-level choice item
     AMPPDUPayload ::= CHOICE {
+        -- Payload is encrypted using an AES-GCM 256 AEAD, using no Additional 
+        -- Data. The field contains the encrypted DER-encoded AMPPDUPayload,
+        -- including the authentication tag from the AEAD.
+        -- The key used to perform the AEAD is derived as follows:
+        -- 1. using the peer's public key and the local private key, an ECDH (or 
+        --    a DH) is performed. Note that this assumes that the peer identity 
+        --    certificate contains a key suitable for doing this, so either a 
+        --    static DH or ECDH key, or an ECDSA key that can also be used for 
+        --    ECDH (the static ECDH key is preferred).
+        -- 2. Using the shared secret derived in step 1, perform an HKDF using  
+        --    the message's challenge data as the nonce. The output of the HKDF
+        --    is the symmetric key used for the AEAD. This shall result in a
+        --    32-octet key.
+        -- 3. The AES-GCM IV is set to 0.
+        encryptedPayload                    [0] OCTET STRING,
+        unencryptedPayload                  [1] UnencryptedAuthorityMessage
+    }
+
+    -- the PDU payload: a top-level choice item
+    AMPNonEncryptedPDUPayload ::= CHOICE {
         -- messages initiated by the Authority
         authorityMessage                    [0]     AuthorityMessage,
         -- messages initiated by a Device
-        deviceMessage                       [1]     DeviceMessage
+        deviceMessage                       [1]     DeviceMessage,
+        extendedMessage [2] Extension
     }
     
     -- Note: for the priorities below, the basic reasoning is this:
@@ -81,54 +103,61 @@ DEFINITIONS ::= BEGIN
         associationAuthorizationStatus      [0]     IMPLICIT    
             AssociationAuthorizationStatus,
             -- priority 2
-        deviceRevocation                    [1]     IMPLICIT
-            DeviceRevocation,
-            -- ACK, Challenged, priority 3
-        deviceStatus                        [2]     IMPLICIT
+        deviceStatus                        [1]     IMPLICIT
             DeviceStatus,
             -- Challenged, ACK
             -- priority 0
-        deviceVerificationResponse          [3]     IMPLICIT
+        deviceVerificationResponse          [2]     IMPLICIT
             DeviceVerificationResponse,
             -- priority 2
-        routingTableRequest                 [4]     IMPLICIT
+        routingTableRequest                 [3]     IMPLICIT
             RoutingTableRequest,
             -- priority 1
-        routingTableStatusRequest           [5]     IMPLICIT
+        routingTableStatusRequest           [4]     IMPLICIT
             RoutingTableStatusRequest,
             -- priority 1
-        routingTableConfirmation            [6]     IMPLICIT
+        routingTableConfirmation            [5]     IMPLICIT
             RoutingTableConfirmation,
             -- priority 1
-        routingTableUpdateConfirmation      [7]     IMPLICIT
+        routingTableUpdateConfirmation      [6]     IMPLICIT
             RoutingTableUpdateConfirmation,
             -- priority 1
-        certificateRequest                  [8]     IMPLICIT
+        certificateRequest                  [7]     IMPLICIT
             CertificateRequest,
             -- priority 0
-        certificateResponse                 [9]     IMPLICIT
+        certificateResponse                 [8]     IMPLICIT
             CertificateResponse,
             -- priority 0
-        challenge                           [10]    IMPLICIT
+        challenge                           [9]    IMPLICIT
             Challenge,
             -- priority 0
-        challengeResponse                   [11]    IMPLICIT
+        challengeResponse                   [10]    IMPLICIT
             ChallengeResponse,
             -- priority 0
-        policies                            [12]    IMPLICIT
+        policies                            [11]    IMPLICIT
             Policies, -- ACK, Challenged
             -- priority 0
-        hello                               [13]    IMPLICIT
-            Hello,
-            -- priority 2
-        authorityCertificate                [14]    IMPLICIT
+        authorityCertificate                [12]    IMPLICIT
             AuthorityCertificate,
             -- ACK, Challenge, priority 
             -- priority 0
-        deviceCertificate                   [15]    IMPLICIT
+        deviceCertificate                   [13]    IMPLICIT
             DeviceCertificate
             -- ACK, Challenge
             -- priority 0
+    }
+
+    -- These messages are unencrypted due to the need to initially send them 
+    -- using multicast (which, because we use a point-to-point scheme for 
+    -- encryption, we can't encrypt).
+    UnencryptedAuthorityMessage ::= CHOICE {
+        hello                               [0]    IMPLICIT
+            Hello,
+            -- priority 2
+        deviceRevocation                    [1]     IMPLICIT
+            DeviceRevocation,
+            -- ACK, Challenged, priority 3
+        extendedMessage [2] Extension
     }
     
     DeviceMessage ::= CHOICE {
@@ -256,6 +285,18 @@ DEFINITIONS ::= BEGIN
     
     -- Sent by the Authority in response to a DeviceVerificationRequest
     DeviceVerificationResponse ::= DeviceStatus
+
+    -- Extensions are used by the implementation to extend AMP.
+    -- In order be permissible for use with AMP, the following must be true:
+    -- - the type field contains a valid OID describing the format of the value
+    -- - the syntax of the value shall be well-defined and registered with the User Group
+    -- - no extension shall be used for any message with substantially similar semantics to a message defined in the main protocol
+    -- - registering an extension implies the DNP-UG may adopt it into the main protocol (which means it cannot be used as an extension afterwards)
+    Extension ::= SEQUENCE {
+       type OBJECT IDENTIFIER,
+       critical BOOLEAN,
+       value OCTET STRING
+    }
 
     -- Sent by the Authority when it comes on-line to indicate to devices
     -- that, if they have something to say/ask, now is the time to do it.
