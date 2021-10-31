@@ -326,7 +326,7 @@ DEFINITIONS ::= BEGIN
         routingTableUpdatePeriod            INTEGER,
         -- Number of seconds the entry should be kept in the table
         -- (should typically be longer than the time between updates)
-        routingTableEntryTTL                INTEGER,    
+        routingTableEntryTTL                INTEGER
     }
     
     -- Sent by devices in response to a RoutingTableRequest to convey
@@ -447,7 +447,7 @@ DEFINITIONS ::= BEGIN
     }
 
     AuthenticationExpirationPolicy ::= SEQUENCE {
-        mayCommunicate                      AuthenticationExpirationCommunicationPolicy
+        mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
         -- non-negative. Indicates whether a device can continue to 
         -- communicate with a peer after its credentials (its Identity 
         -- Certificate) expires, and for how long (in seconds). If zero,
@@ -602,11 +602,12 @@ DEFINITIONS ::= BEGIN
         other(0),
         -- These values are used to identify a message in a 
         -- Challenge or a ChallengeResponse
+        device-revocation(1),
         association-authorization-status(2),
         device-certificate(5),
         device-status(8),
         policies(12),
-        routing-table-update(16),
+        routing-table-update(16)
     }
     
     RequestAuthenticationPolicy ::= INTEGER {
@@ -664,7 +665,13 @@ DEFINITIONS ::= BEGIN
 -- -------------------------------------------------------------------
 -- from RFC 5912
 -- -------------------------------------------------------------------
-    DistinguishedName ::= as defined in RFC 5912
+    DistinguishedName ::= RDNSequence
+    RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
+    RelativeDistinguishedName ::= SET OF SingleAttribute
+    SingleAttribute ::= SEQUENCE {
+        type OBJECT IDENTIFIER,
+        value OCTET STRING
+    }
 
 -- -------------------------------------------------------------------
 -- from IEC 62351-8
