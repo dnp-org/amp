@@ -329,7 +329,7 @@ DEFINITIONS ::= BEGIN
     
     -- Maintained by devices and sent by the Authority, the policies
     -- determine the behavior of the device is various
-    -- security-related circumstances, notably when the Authority is not
+    -- security-related circumstances, especially when the Authority is not
     -- available.
     -- Sent by a device whenever the local policies version is 0.
     -- Note that if the policies are changed out-of-band, the
@@ -339,7 +339,11 @@ DEFINITIONS ::= BEGIN
     -- The device SHALL be configurable for the interval for sending 
     -- the policies to the Authority when the version is 0. That interval
     -- SHALL NOT be infinite if the device has an Authority.
-    Policies ::= SEQUENCE {
+    Policies ::= SET OF Policy
+	-- TODO: need time-outs for device verification periodicity, boolean to indicate
+    --       whether to verify device when communications are established
+	
+	Policy ::= SEQUENCE {
         -- Non-negative integer version of the policies. Must be
         -- strictly greater than any previous version of the policy
         -- sent by the Authority so it can be validated by the device.
@@ -349,18 +353,10 @@ DEFINITIONS ::= BEGIN
         -- policy and apply it only if the challenge succeeds. Any successful
         -- change of policy commanded by the Autority shall be acknowledged.
         -- Built-in default configurations have version 0.
-        version                             INTEGER,    
-        unauthorizedAssociationPolicy       UnauthorizedAssociationPolicy,
-        authorizedAssociationPolicy         AuthorizedAssociationPolicy,
-        unauthenticatedDevicePolicy         UnauthenticatedDevicePolicy,
-        defaultAccessPolicy                 DefaultAccessPolicy,
-        authenticationExpirationPolicy      AuthenticationExpirationPolicy,
-        authoritySignatureVerificationPolicy
-                                            AuthoritySignatureVerificationPolicy
-
-        -- TODO: need time-outs for device verification periodicity, boolean to indicate
-        --       whether to verify device when communications are established
-    }
+		version 							INTEGER,
+		type								OBJECT IDENTIFIER,
+		value								OCTET STRING OPTIONAL
+	}
     
     RoutingConfiguration ::= SEQUENCE {
         -- number of seconds between updates
@@ -698,6 +694,15 @@ DEFINITIONS ::= BEGIN
     controller-event OBJECT IDENTIFIER ::= { event 0 }
     master-event OBJECT IDENTIFIER ::= { event 1 }
     outstation-event OBJECT IDENTIFIER ::= { event 2 }
+	
+	policy OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 2 }
+    authentication-expiration-policy ::= { policy 0 }
+    authority-signature-verification-policy ::= { policy 1 }
+    authorized-association-policy ::= { policy 2 }
+    default-access-policy ::= { policy 3 }
+    unauthenticated-device-policy ::= { policy 4 }
+    unauthorized-association-policy ::= { policy 5 }
+	
 -- ===================================================================
 -- "borrowed" types
 -- ===================================================================
