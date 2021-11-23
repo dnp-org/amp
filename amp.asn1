@@ -331,11 +331,13 @@ DEFINITIONS ::= BEGIN
     -- determine the behavior of the device is various
     -- security-related circumstances, especially when the Authority is not
     -- available.
-    -- Sent by a device whenever the local policies version is 0.
-    -- Note that if the policies are changed out-of-band, the
-    -- version SHALL bet set to 0 and the device will start periodically
-    -- sending its policies to the Authority until they are overriden
-    -- by the Authority.
+    -- Policies are sent by a device whenever the local policy version is 0.
+	-- Only policies for which the local version is 0 are sent. Whether the
+	-- contents of the policy is included in the report is configurable.
+    -- Note that if policies are changed out-of-band, the
+    -- version of the locally changed policies SHALL bet set to 0 and
+	-- the device will start periodically sending those policies to the
+	-- Authority until they are overriden by the Authority.
     -- The device SHALL be configurable for the interval for sending 
     -- the policies to the Authority when the version is 0. That interval
     -- SHALL NOT be infinite if the device has an Authority.
@@ -344,7 +346,7 @@ DEFINITIONS ::= BEGIN
     --       whether to verify device when communications are established
 	
 	Policy ::= SEQUENCE {
-        -- Non-negative integer version of the policies. Must be
+        -- Non-negative integer version of the policies. If changed, must be
         -- strictly greater than any previous version of the policy
         -- sent by the Authority so it can be validated by the device.
         -- The device shall not accept a policy that is different from its
@@ -352,7 +354,8 @@ DEFINITIONS ::= BEGIN
         -- equal to that of its current policy but shall challenge such a 
         -- policy and apply it only if the challenge succeeds. Any successful
         -- change of policy commanded by the Autority shall be acknowledged.
-        -- Built-in default configurations have version 0.
+        -- Built-in default configurations have version 0. The Authority 
+		-- shall not use 0 as a policy version number.
 		version 							INTEGER,
 		type								OBJECT IDENTIFIER,
 		value								OCTET STRING OPTIONAL
@@ -483,7 +486,38 @@ DEFINITIONS ::= BEGIN
         all                                 BOOLEAN OPTIONAL
     }
 
-    AuthenticationExpirationPolicy ::= SEQUENCE {
+    -- CommonName from the certificate, must be system-wide unique
+    CommonName ::= UTF8String
+
+    Certificate ::= OCTET STRING
+    
+    Fingerprint ::= Hash
+    
+    Hash ::= SEQUENCE {
+        algorithm                           OBJECT IDENTIFIER,
+        digest                              OCTET STRING
+    }
+
+    RoutingTableEntry ::= SEQUENCE {
+        name                                DistinguishedName,
+        -- certificate was verified - the device is authentic
+        trusted                             BOOLEAN,
+        -- certificate of the device that reported this entry
+        -- to us (and every device in between) is verified
+        trustedSource                       BOOLEAN,
+        -- hash of the device's public key (the algorithm should always be SHA256)
+        fingerprint                         Fingerprint
+    }
+
+    Signature ::= SEQUENCE {
+        algorithm                           OBJECT IDENTIFIER,
+        signatureValue                      BIT STRING
+    }
+
+-- ===================================================================
+-- Policy structures
+-- ===================================================================
+	AuthenticationExpirationPolicy ::= SEQUENCE {
         mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
         -- non-negative. Indicates whether a device can continue to 
         -- communicate with a peer after its credentials (its Identity 
@@ -512,36 +546,8 @@ DEFINITIONS ::= BEGIN
         refreshAuthorizationInterval        INTEGER OPTIONAL
     }
 
-    -- CommonName from the certificate, must be system-wide unique
-    CommonName ::= UTF8String
-
-    Certificate ::= OCTET STRING
-    
     DefaultAccessPolicy ::= SEQUENCE {
         defaultRoles                        IECUserRoles
-    }
-
-    Fingerprint ::= Hash
-    
-    Hash ::= SEQUENCE {
-        algorithm                           OBJECT IDENTIFIER,
-        digest                              OCTET STRING
-    }
-
-    RoutingTableEntry ::= SEQUENCE {
-        name                                DistinguishedName,
-        -- certificate was verified - the device is authentic
-        trusted                             BOOLEAN,
-        -- certificate of the device that reported this entry
-        -- to us (and every device in between) is verified
-        trustedSource                       BOOLEAN,
-        -- hash of the device's public key (the algorithm should always be SHA256)
-        fingerprint                         Fingerprint
-    }
-
-    Signature ::= SEQUENCE {
-        algorithm                           OBJECT IDENTIFIER,
-        signatureValue                      BIT STRING
     }
 
     UnauthenticatedDevicePolicy ::= SEQUENCE {
@@ -568,7 +574,7 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- enumerations
 -- ===================================================================
-    AssociationAuthorization ::= INTEGER {
+	AssociationAuthorization ::= INTEGER {
         -- some status other than the following / unknown. Should not
         -- be used except as a place-holder. Shall not be sent over
         -- the wire.
