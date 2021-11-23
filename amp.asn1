@@ -701,13 +701,16 @@ DEFINITIONS ::= BEGIN
     master-event OBJECT IDENTIFIER ::= { event 1 }
     outstation-event OBJECT IDENTIFIER ::= { event 2 }
 	
-	policy OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 2 }
+    policy OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 2 }
     authentication-expiration-policy ::= { policy 0 }
     authority-signature-verification-policy ::= { policy 1 }
     authorized-association-policy ::= { policy 2 }
     default-access-policy ::= { policy 3 }
     unauthenticated-device-policy ::= { policy 4 }
     unauthorized-association-policy ::= { policy 5 }
+
+    entity OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 3 }
+    authority OBJECT IDENTIFIER ::= { entity 0 }
 	
 -- ===================================================================
 -- "borrowed" types
