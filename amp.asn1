@@ -526,13 +526,15 @@ DEFINITIONS ::= BEGIN
         mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
     }
     
+    -- The certificates used by the device to authenticate the
+    -- Authority, and thus instill trust in it, is set using this policy.
     AuthoritySignatureVerificationPolicy ::= SEQUENCE {
         -- Identity certificates for the Authority(ies)
-        authorityIdentityCertificates       SET OF Certificate OPTIONAL,
-        -- Identity certificate of the trusted root CA. Note that
-        -- either an Authority Identity Certificate or a Trusted Root
-        -- Certificate is required
-        trustedRootCertificate              Certificate OPTIONAL
+        authorityIdentityCertificates       [1] IMPLICIT    SET OF Certificate OPTIONAL,
+        -- Intermediate CA certificates for the Authority(ies)
+        authorityCACertificates             [2] IMPLICIT    SET OF Certificate OPTIONAL,
+        -- Identity certificate of the trusted root CA.
+        trustedRootCertificate              [3] IMPLICIT    Certificate OPTIONAL
     }
     
     AuthorizedAssociationPolicy ::= SEQUENCE {
