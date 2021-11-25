@@ -517,7 +517,12 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- Policy structures
 -- ===================================================================
-	AuthenticationExpirationPolicy ::= SEQUENCE {
+    -- Policy to determine whether a device is permitted to continue
+    -- communicating when either its own Identity Certificate or that
+    -- of the peer expires.
+    -- The recommended default is to permit continued communications 
+    -- until the Update Key also expires.
+    AuthenticationExpirationPolicy ::= SEQUENCE {
         mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
     }
     
