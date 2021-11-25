@@ -724,7 +724,7 @@ DEFINITIONS ::= BEGIN
     RelativeDistinguishedName ::= SET OF SingleAttribute
     SingleAttribute ::= SEQUENCE {
         type OBJECT IDENTIFIER,
-        value OCTET STRING
+        value ANY -- depends on the type OID
     }
 
 -- -------------------------------------------------------------------
