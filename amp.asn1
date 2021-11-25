@@ -342,10 +342,10 @@ DEFINITIONS ::= BEGIN
     -- the policies to the Authority when the version is 0. That interval
     -- SHALL NOT be infinite if the device has an Authority.
     Policies ::= SET OF Policy
-	-- TODO: need time-outs for device verification periodicity, boolean to indicate
+    -- TODO: need time-outs for device verification periodicity, boolean to indicate
     --       whether to verify device when communications are established
 	
-	Policy ::= SEQUENCE {
+    Policy ::= SEQUENCE {
         -- Non-negative integer version of the policies. If changed, must be
         -- strictly greater than any previous version of the policy
         -- sent by the Authority so it can be validated by the device.
@@ -355,11 +355,11 @@ DEFINITIONS ::= BEGIN
         -- policy and apply it only if the challenge succeeds. Any successful
         -- change of policy commanded by the Autority shall be acknowledged.
         -- Built-in default configurations have version 0. The Authority 
-		-- shall not use 0 as a policy version number.
-		version 							INTEGER,
-		type								OBJECT IDENTIFIER,
-		value								OCTET STRING OPTIONAL
-	}
+        -- shall not use 0 as a policy version number.
+        version                             INTEGER,
+        type                                OBJECT IDENTIFIER,
+        value                               ANY
+    }
     
     RoutingConfiguration ::= SEQUENCE {
         -- number of seconds between updates
