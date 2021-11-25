@@ -519,13 +519,6 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 	AuthenticationExpirationPolicy ::= SEQUENCE {
         mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
-        -- non-negative. Indicates whether a device can continue to 
-        -- communicate with a peer after its credentials (its Identity 
-        -- Certificate) expires, and for how long (in seconds). If zero,
-        -- expiration of the certificate immediately invalidates both
-        -- the Update Key and any Session Keys that may be active at
-        -- the time. Required if mayCommunicate is limited-time(3)
-        duration                            INTEGER OPTIONAL    
     }
     
     AuthoritySignatureVerificationPolicy ::= SEQUENCE {
@@ -600,12 +593,8 @@ DEFINITIONS ::= BEGIN
         -- Communication may continue after the Identity Certificate
         -- expires until the Update Key also expires
         while-update-key-valid(1),
-        -- Communication may continue after the Identity Certificate
-        -- expires until the current Session Keys expire
-        while-session-key-valid(2),
-        -- Communication may continue after the Identity Certificate
-        -- expires for the specified duration
-        limited-time(3)
+        -- Communications case upon expiry of the Identity Certificate
+        no-communication(2)
     }
     
     AuthorizationRefreshPolicy ::= INTEGER {
