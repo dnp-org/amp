@@ -537,13 +537,16 @@ DEFINITIONS ::= BEGIN
         trustedRootCertificate              [3] IMPLICIT    Certificate OPTIONAL
     }
     
+    -- Once the authorization for an association is in place, it may need to be refreshed.
+    -- Whether that is the case and, if so, at what interval, is specified in the 
+    -- authorized association policy.
     AuthorizedAssociationPolicy ::= SEQUENCE {
-        refreshAuthorization                AuthorizationRefreshPolicy,
+        refreshAuthorization                [1] IMPLICIT    AuthorizationRefreshPolicy,
         -- If authorization refresh requests are recurring,
         -- indicates the interval at which the device should ask,
         -- in seconds. Required if refreshAuthorization is not never(1)
-        refreshTimeout                      INTEGER OPTIONAL,
-        refreshAuthorizationInterval        INTEGER OPTIONAL
+        refreshAuthorizationInterval        [2] IMPLICIT    INTEGER OPTIONAL,
+        refreshTimeout                      [3] IMPLICIT    INTEGER OPTIONAL
     }
 
     DefaultAccessPolicy ::= SEQUENCE {
