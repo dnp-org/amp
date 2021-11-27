@@ -549,6 +549,10 @@ DEFINITIONS ::= BEGIN
         refreshTimeout                      [3] IMPLICIT    INTEGER OPTIONAL
     }
 
+    -- Each Master-Outstation Association has a role, or a set of roles, assigned to it.
+    -- These roles are defined in IEC 62351-8. If an association is authorized but does
+    -- not have an Attribute Certificate that specifies the applicable roles, the Master 
+    -- may assume a set of default roles according to the default access policy.
     DefaultAccessPolicy ::= SEQUENCE {
         defaultRoles                        IECUserRoles
     }
