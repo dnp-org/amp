@@ -534,7 +534,7 @@ DEFINITIONS ::= BEGIN
         -- Intermediate CA certificates for the Authority(ies)
         authorityCACertificates             [2] IMPLICIT    SET OF Certificate OPTIONAL,
         -- Identity certificate of the trusted root CA.
-        trustedRootCertificate              [3] IMPLICIT    Certificate OPTIONAL
+        rootOfTrustCertificate              [3] IMPLICIT    Certificate OPTIONAL
     }
     
     -- Once the authorization for an association is in place, it may need to be refreshed.
