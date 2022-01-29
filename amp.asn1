@@ -329,18 +329,24 @@ DEFINITIONS ::= BEGIN
     
     -- Maintained by devices and sent by the Authority, the policies
     -- determine the behavior of the device is various
-    -- security-related circumstances, notably when the Authority is not
+    -- security-related circumstances, especially when the Authority is not
     -- available.
-    -- Sent by a device whenever the local policies version is 0.
-    -- Note that if the policies are changed out-of-band, the
-    -- version SHALL bet set to 0 and the device will start periodically
-    -- sending its policies to the Authority until they are overriden
-    -- by the Authority.
+    -- Policies are sent by a device whenever the local policy version is 0.
+	-- Only policies for which the local version is 0 are sent. Whether the
+	-- contents of the policy is included in the report is configurable.
+    -- Note that if policies are changed out-of-band, the
+    -- version of the locally changed policies SHALL bet set to 0 and
+	-- the device will start periodically sending those policies to the
+	-- Authority until they are overriden by the Authority.
     -- The device SHALL be configurable for the interval for sending 
     -- the policies to the Authority when the version is 0. That interval
     -- SHALL NOT be infinite if the device has an Authority.
-    Policies ::= SEQUENCE {
-        -- Non-negative integer version of the policies. Must be
+    Policies ::= SET OF Policy
+    -- TODO: need time-outs for device verification periodicity, boolean to indicate
+    --       whether to verify device when communications are established
+	
+    Policy ::= SEQUENCE {
+        -- Non-negative integer version of the policies. If changed, must be
         -- strictly greater than any previous version of the policy
         -- sent by the Authority so it can be validated by the device.
         -- The device shall not accept a policy that is different from its
@@ -348,18 +354,11 @@ DEFINITIONS ::= BEGIN
         -- equal to that of its current policy but shall challenge such a 
         -- policy and apply it only if the challenge succeeds. Any successful
         -- change of policy commanded by the Autority shall be acknowledged.
-        -- Built-in default configurations have version 0.
-        version                             INTEGER,    
-        unauthorizedAssociationPolicy       UnauthorizedAssociationPolicy,
-        authorizedAssociationPolicy         AuthorizedAssociationPolicy,
-        unauthenticatedDevicePolicy         UnauthenticatedDevicePolicy,
-        defaultAccessPolicy                 DefaultAccessPolicy,
-        authenticationExpirationPolicy      AuthenticationExpirationPolicy,
-        authoritySignatureVerificationPolicy
-                                            AuthoritySignatureVerificationPolicy
-
-        -- TODO: need time-outs for device verification periodicity, boolean to indicate
-        --       whether to verify device when communications are established
+        -- Built-in default configurations have version 0. The Authority 
+        -- shall not use 0 as a policy version number.
+        version                             INTEGER,
+        type                                OBJECT IDENTIFIER,
+        value                               ANY
     }
     
     RoutingConfiguration ::= SEQUENCE {
@@ -487,44 +486,11 @@ DEFINITIONS ::= BEGIN
         all                                 BOOLEAN OPTIONAL
     }
 
-    AuthenticationExpirationPolicy ::= SEQUENCE {
-        mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
-        -- non-negative. Indicates whether a device can continue to 
-        -- communicate with a peer after its credentials (its Identity 
-        -- Certificate) expires, and for how long (in seconds). If zero,
-        -- expiration of the certificate immediately invalidates both
-        -- the Update Key and any Session Keys that may be active at
-        -- the time. Required if mayCommunicate is limited-time(3)
-        duration                            INTEGER OPTIONAL    
-    }
-    
-    AuthoritySignatureVerificationPolicy ::= SEQUENCE {
-        -- Identity certificates for the Authority(ies)
-        authorityIdentityCertificates       SET OF Certificate OPTIONAL,
-        -- Identity certificate of the trusted root CA. Note that
-        -- either an Authority Identity Certificate or a Trusted Root
-        -- Certificate is required
-        trustedRootCertificate              Certificate OPTIONAL
-    }
-    
-    AuthorizedAssociationPolicy ::= SEQUENCE {
-        refreshAuthorization                AuthorizationRefreshPolicy,
-        -- If authorization refresh requests are recurring,
-        -- indicates the interval at which the device should ask,
-        -- in seconds. Required if refreshAuthorization is not never(1)
-        refreshTimeout                      INTEGER OPTIONAL,
-        refreshAuthorizationInterval        INTEGER OPTIONAL
-    }
-
     -- CommonName from the certificate, must be system-wide unique
     CommonName ::= UTF8String
 
     Certificate ::= OCTET STRING
     
-    DefaultAccessPolicy ::= SEQUENCE {
-        defaultRoles                        IECUserRoles
-    }
-
     Fingerprint ::= Hash
     
     Hash ::= SEQUENCE {
@@ -552,6 +518,49 @@ DEFINITIONS ::= BEGIN
         signatureValue                      BIT STRING
     }
 
+-- ===================================================================
+-- Policy structures
+-- ===================================================================
+    -- Policy to determine whether a device is permitted to continue
+    -- communicating when either its own Identity Certificate or that
+    -- of the peer expires.
+    -- The recommended default is to permit continued communications 
+    -- until the Update Key also expires.
+    AuthenticationExpirationPolicy ::= SEQUENCE {
+        mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
+    }
+    
+    -- The certificates used by the device to authenticate the
+    -- Authority, and thus instill trust in it, is set using this policy.
+    AuthoritySignatureVerificationPolicy ::= SEQUENCE {
+        -- Identity certificates for the Authority(ies)
+        authorityIdentityCertificates       [1] IMPLICIT    SET OF Certificate OPTIONAL,
+        -- Intermediate CA certificates for the Authority(ies)
+        authorityCACertificates             [2] IMPLICIT    SET OF Certificate OPTIONAL,
+        -- Identity certificate of the trusted root CA.
+        rootOfTrustCertificate              [3] IMPLICIT    Certificate OPTIONAL
+    }
+    
+    -- Once the authorization for an association is in place, it may need to be refreshed.
+    -- Whether that is the case and, if so, at what interval, is specified in the 
+    -- authorized association policy.
+    AuthorizedAssociationPolicy ::= SEQUENCE {
+        refreshAuthorization                [1] IMPLICIT    AuthorizationRefreshPolicy,
+        -- If authorization refresh requests are recurring,
+        -- indicates the interval at which the device should ask,
+        -- in seconds. Required if refreshAuthorization is not never(1)
+        refreshTimeout                      [2] IMPLICIT    INTEGER OPTIONAL,
+        refreshAuthorizationInterval        [3] IMPLICIT    INTEGER OPTIONAL
+    }
+
+    -- Each Master-Outstation Association has a role, or a set of roles, assigned to it.
+    -- These roles are defined in IEC 62351-8. If an association is authorized but does
+    -- not have an Attribute Certificate that specifies the applicable roles, the Master 
+    -- may assume a set of default roles according to the default access policy.
+    DefaultAccessPolicy ::= SEQUENCE {
+        defaultRoles                        IECUserRoles
+    }
+
     UnauthenticatedDevicePolicy ::= SEQUENCE {
         -- Indicates whether a device can communicate with an
         -- unauthenticated device
@@ -576,7 +585,7 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- enumerations
 -- ===================================================================
-    AssociationAuthorization ::= INTEGER {
+	AssociationAuthorization ::= INTEGER {
         -- some status other than the following / unknown. Should not
         -- be used except as a place-holder. Shall not be sent over
         -- the wire.
@@ -602,12 +611,8 @@ DEFINITIONS ::= BEGIN
         -- Communication may continue after the Identity Certificate
         -- expires until the Update Key also expires
         while-update-key-valid(1),
-        -- Communication may continue after the Identity Certificate
-        -- expires until the current Session Keys expire
-        while-session-key-valid(2),
-        -- Communication may continue after the Identity Certificate
-        -- expires for the specified duration
-        limited-time(3)
+        -- Communications case upon expiry of the Identity Certificate
+        no-communication(2)
     }
     
     AuthorizationRefreshPolicy ::= INTEGER {
@@ -698,11 +703,23 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- Object identifiers
 -- ===================================================================
-    AMPEvent OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 1 }
-    AMPControllerEvent OBJECT IDENTIFIER ::= { AMPEvent 0 }
-    AMPMasterEvent OBJECT IDENTIFIER ::= { AMPEvent 1 }
-    AMPOutstationEvent OBJECT IDENTIFIER ::= { AMPEvent 2 }
+    event                                   OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 1 }
+    controller-event                        OBJECT IDENTIFIER ::= { event 0 }
+    master-event                            OBJECT IDENTIFIER ::= { event 1 }
+    outstation-event                        OBJECT IDENTIFIER ::= { event 2 }
+	
+    policy                                  OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 2 }
+    authentication-expiration-policy        OBJECT IDENTIFIER ::= { policy 0 }
+    authority-signature-verification-policy OBJECT IDENTIFIER ::= { policy 1 }
+    authorized-association-policy           OBJECT IDENTIFIER ::= { policy 2 }
+    default-access-policy                   OBJECT IDENTIFIER ::= { policy 3 }
+    unauthenticated-device-policy           OBJECT IDENTIFIER ::= { policy 4 }
+    unauthorized-association-policy         OBJECT IDENTIFIER ::= { policy 5 }
 
+    entity                                  OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 3 }
+    authority                               OBJECT IDENTIFIER ::= { entity 0 }
+    device                                  OBJECT IDENTIFIER ::= { entity 1 }
+	
 -- ===================================================================
 -- "borrowed" types
 -- ===================================================================
@@ -715,7 +732,7 @@ DEFINITIONS ::= BEGIN
     RelativeDistinguishedName ::= SET OF SingleAttribute
     SingleAttribute ::= SEQUENCE {
         type OBJECT IDENTIFIER,
-        value OCTET STRING
+        value ANY -- depends on the type OID
     }
 
 -- -------------------------------------------------------------------
