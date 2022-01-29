@@ -533,16 +533,20 @@ DEFINITIONS ::= BEGIN
     }
 
     RoutingTableEntry ::= SEQUENCE {
-        name                                DistinguishedName,
-        -- certificate was verified - the device is authentic
-        trusted                             BOOLEAN,
-        -- certificate of the device that reported this entry
-        -- to us (and every device in between) is verified
-        trustedSource                       BOOLEAN,
-        -- hash of the device's public key (the algorithm should always be SHA256)
-        fingerprint                         Fingerprint
-    }
+        name DistinguishedName,
+        
+        flags BIT STRING
+        {
+            trusted (0),            -- certificate was verified - the device is authentic
+            trustedSource (1),      -- certificate of the device that reported this entry to us (and every device in between) is verified
+            master (2),             -- the device is configured as a master (not mutually exclusive with being an outstation)       
+            outstation (3)          -- the device is configured as an outstation (not mutually exclusive with being a master)
+        },
 
+        -- hash of the device's public key (the algorithm should always be SHA256)
+        fingerprint Fingerprint
+    }
+    
     Signature ::= SEQUENCE {
         algorithm                           OBJECT IDENTIFIER,
         signatureValue                      BIT STRING
