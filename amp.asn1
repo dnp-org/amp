@@ -43,7 +43,7 @@ DEFINITIONS ::= BEGIN
         -- This data shall be random and shall be generated using an SP-800 90A
         -- compliant RNG.
         challengeData                       [4] IMPLICIT    OCTET STRING SIZE(32),
-        payload                             [5] IMPLICIT    AMPPDUPayload,
+        payload                             [5]             AMPPDUPayload,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
         signature                           [6] IMPLICIT    Signature
@@ -52,9 +52,9 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- types
 -- ===================================================================
--- -------------------------------------------------------------------
+-- ===================================================================
 -- structural types
--- -------------------------------------------------------------------
+-- ===================================================================
     AMPPDUPayload ::= CHOICE {
         -- Payload is encrypted using an AES-GCM 256 AEAD, using no Additional 
         -- Data. The field contains the encrypted DER-encoded AMPPDUPayload,
@@ -80,7 +80,7 @@ DEFINITIONS ::= BEGIN
         authorityMessage                    [0]     AuthorityMessage,
         -- messages initiated by a Device
         deviceMessage                       [1]     DeviceMessage,
-        extendedMessage [2] Extension
+        extendedMessage                     [2]     Extension
     }
     
     -- Note: for the priorities below, the basic reasoning is this:
@@ -122,10 +122,10 @@ DEFINITIONS ::= BEGIN
         routingTableUpdateConfirmation      [6]     IMPLICIT
             RoutingTableUpdateConfirmation,
             -- priority 1
-        certificateRequest                  [7]     IMPLICIT
+        certificateRequest                  [7]
             CertificateRequest,
             -- priority 0
-        certificateResponse                 [8]     IMPLICIT
+        certificateResponse                 [8]
             CertificateResponse,
             -- priority 0
         challenge                           [9]    IMPLICIT
@@ -151,13 +151,17 @@ DEFINITIONS ::= BEGIN
     -- using multicast (which, because we use a point-to-point scheme for 
     -- encryption, we can't encrypt).
     UnencryptedAuthorityMessage ::= CHOICE {
-        hello                               [0]    IMPLICIT
+        hello                               [0]     IMPLICIT
             Hello,
             -- priority 2
         deviceRevocation                    [1]     IMPLICIT
             DeviceRevocation,
             -- ACK, Challenged, priority 3
-        extendedMessage [2] Extension
+        certificateRevocations              [2]     IMPLICIT
+            CertificateRevocations,
+            -- ACK, priority 3
+        extendedMessage                     [3]     IMPLICIT
+            Extension
     }
     
     DeviceMessage ::= CHOICE {
@@ -179,9 +183,9 @@ DEFINITIONS ::= BEGIN
             RoutingTableConfirmation,
         routingTableUpdateConfirmation      [8]     IMPLICIT
             RoutingTableUpdateConfirmation,
-        certificateRequest                  [9]     IMPLICIT
+        certificateRequest                  [9]
             CertificateRequest,
-        certificateResponse                 [10]    IMPLICIT
+        certificateResponse                 [10]
             CertificateResponse,
         challenge                           [11]    IMPLICIT
             Challenge,
@@ -198,9 +202,9 @@ DEFINITIONS ::= BEGIN
             Acknowledgement
     }
     
--- -------------------------------------------------------------------
+-- ===================================================================
 -- service request types
--- -------------------------------------------------------------------
+-- ===================================================================
     -- Sent by the Device when it gets a new set of policies or a new
     -- authority certificate (AuthorityCertificateChange) from the Authority.
     -- Authority will re-send the change until it is blue in the face otherwise.
@@ -259,6 +263,12 @@ DEFINITIONS ::= BEGIN
         certificateStatus               [1] CertificateStatus
     }
     
+    CertificateRevocations ::= SEQUENCE {
+        issuer                              DistinguisedName,   -- name of the CA we're relaying the revocation from
+        thisUpdate                          UTCTime,            -- copied (and possible converted) from the thisUpdate field from the (intermediate) CA's CRL
+        revokedCertificates                 SEQUENCE OF CertificateRevocation
+    }
+
     Challenge ::= SEQUENCE {
         challengedMessageType               ChallengeableMessageType,
         challengedMessageHash               Hash
@@ -407,7 +417,7 @@ DEFINITIONS ::= BEGIN
     --   entries that have been removed and one listing the entries
     --   that have been added. Added and removed entries may be
     --   conveyed in any order. If there are more additions and/or
-    --   removals than can fit in a single messages there will be
+    --   removals than can fit in a single message there will be
     --   more than two messages in the response.
     RoutingTableRequest ::= SEQUENCE {
         operation                           RoutingTableRequestOperation,
@@ -478,11 +488,16 @@ DEFINITIONS ::= BEGIN
         all                                 BOOLEAN OPTIONAL
     }
 
+    Certificate ::= OCTET STRING
+
+    CertificateRevocation ::= SEQUENCE {
+        userCertificate                     INTEGER,
+        revocationDate                      UTCTime
+    }
+    
     -- CommonName from the certificate, must be system-wide unique
     CommonName ::= UTF8String
 
-    Certificate ::= OCTET STRING
-    
     Fingerprint ::= Hash
     
     Hash ::= SEQUENCE {
@@ -705,12 +720,18 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
 -- Object identifiers
 -- ===================================================================
-    event                                   OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 1 }
+    authorization-management-protocol       OBJECT IDENTIFIER ::= {
+        iso(1) org(3) dod(6) internet(1) private(4) enterprise(1)
+        vlinder-software(49974) security(0) protocols(0)
+        authorization-management-protocol(1)
+    }
+
+    event                                   OBJECT IDENTIFIER ::= { authorization-management-protocol 1 }
     controller-event                        OBJECT IDENTIFIER ::= { event 0 }
     master-event                            OBJECT IDENTIFIER ::= { event 1 }
     outstation-event                        OBJECT IDENTIFIER ::= { event 2 }
 	
-    policy                                  OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 2 }
+    policy                                  OBJECT IDENTIFIER ::= { authorization-management-protocol 2 }
     authentication-expiration-policy        OBJECT IDENTIFIER ::= { policy 0 }
     authority-signature-verification-policy OBJECT IDENTIFIER ::= { policy 1 }
     authorized-association-policy           OBJECT IDENTIFIER ::= { policy 2 }
@@ -720,7 +741,7 @@ DEFINITIONS ::= BEGIN
     unauthorized-association-policy         OBJECT IDENTIFIER ::= { policy 6 }
     routing-policy                          OBJECT IDENTIFIER ::= { policy 7 }
 
-    entity                                  OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 3 }
+    entity                                  OBJECT IDENTIFIER ::= { authorization-management-protocol 3 }
     authority                               OBJECT IDENTIFIER ::= { entity 0 }
     device                                  OBJECT IDENTIFIER ::= { entity 1 }
 	
@@ -728,9 +749,9 @@ DEFINITIONS ::= BEGIN
 -- "borrowed" types
 -- ===================================================================
 
--- -------------------------------------------------------------------
+-- ===================================================================
 -- from RFC 5912
--- -------------------------------------------------------------------
+-- ===================================================================
     DistinguishedName ::= RDNSequence
     RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
     RelativeDistinguishedName ::= SET OF SingleAttribute
@@ -739,9 +760,9 @@ DEFINITIONS ::= BEGIN
         value ANY -- depends on the type OID
     }
 
--- -------------------------------------------------------------------
+-- ===================================================================
 -- from IEC 62351-8
--- -------------------------------------------------------------------
+-- ===================================================================
     IECUserRoles ::= SEQUENCE OF UserRoleInfo
 
     UserRoleInfo ::= SEQUENCE { -- contains the role information blob
