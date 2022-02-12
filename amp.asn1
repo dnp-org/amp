@@ -561,20 +561,22 @@ DEFINITIONS ::= BEGIN
         defaultRoles                        IECUserRoles
     }
 
-    UnauthenticatedDevicePolicy ::= SEQUENCE {
-        -- Indicates whether a device can communicate with an
-        -- unauthenticated device
-        mayCommunicate                      BOOLEAN,
+    DeviceAuthenticationPolicy ::= SEQUENCE {
+        -- Indicates whether full PKI verification is required for device authentication.
+        -- To be compliant to AMP, this is required to be true. However, to allow for
+        -- scenarios where the Authority and the PKI it is part of to not (yet) be present,
+        -- this may be false as a transitory case.
+        requireCertificateChainValidation BOOLEAN,
+        permitSelfSignedIdentityCertificates BOOLEAN
+    }
+    DeviceCertificateValidationPolicy ::= SEQUENCE {
         -- Indicates when a device should ask for authentication of
-        -- the other device
+        -- the other device (i.e. validate that the certificate has 
+        -- not been revoked)
         requestAuthentication               RequestAuthenticationPolicy,    
         -- If authentication requests are recurring, indicates the
-        -- interval at which the device should ask, in seconds. Device
-        -- won’t ask if already authenticated.
-        -- Authentication is in the form of a certificate, so device
-        -- remains authenticated for the duration of validity of the
-        -- certificate. Required if requestAuthentication is
-        -- recurring(2)
+        -- interval at which the device should ask, in seconds.
+        -- Required if requestAuthentication is recurring(2)
         requestAuthenticationInterval       INTEGER OPTIONAL
     }
     
