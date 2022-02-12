@@ -746,13 +746,14 @@ DEFINITIONS ::= BEGIN
         aor                             UTF8String (SIZE(1..64)),
         revision                        INTEGER (0..255),
         roleDefinition                  UTF8String (0..23),
-        -- optional fields to be used within IEEE 1815 and IEC60870-5
+        -- optional fields to be used within IEEE 1815 and IEC60870-5, shall be absent in AMP
         operation                       Operation OPTIONAL,
         statusChangeSequenceNumber      INTEGER (0..4294967295) OPTIONAL,
     }
 
     RoleId ::= INTEGER (-32768..32767)
 
+    -- not used
     Operation ::= ENUMERATED { add (1), delete (2), change (3) }
 
 -- ===================================================================
