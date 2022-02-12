@@ -579,7 +579,7 @@ DEFINITIONS ::= BEGIN
     }
     
     UnauthorizedAssociationPolicy ::= SEQUENCE {
-        -- TODO
+        allowCommunication BOOLEAN
     }
 
 -- ===================================================================
