@@ -361,14 +361,6 @@ DEFINITIONS ::= BEGIN
         value                               ANY
     }
     
-    RoutingConfiguration ::= SEQUENCE {
-        -- number of seconds between updates
-        routingTableUpdatePeriod            INTEGER,
-        -- Number of seconds the entry should be kept in the table
-        -- (should typically be longer than the time between updates)
-        routingTableEntryTTL                INTEGER
-    }
-    
     -- Sent by devices in response to a RoutingTableRequest to convey
     -- the entire routing table. The routing table may exceed the size
     -- of an AMP PDU (which has to fit in an SPDU, which 
@@ -584,6 +576,14 @@ DEFINITIONS ::= BEGIN
         allowCommunication BOOLEAN
     }
 
+    RoutingPolicy ::= SEQUENCE {
+        -- number of seconds between updates
+        routingTableUpdatePeriod            INTEGER,
+        -- Number of seconds the entry should be kept in the table
+        -- (should typically be longer than the time between updates)
+        routingTableEntryTTL                INTEGER
+    }
+
 -- ===================================================================
 -- enumerations
 -- ===================================================================
@@ -715,8 +715,10 @@ DEFINITIONS ::= BEGIN
     authority-signature-verification-policy OBJECT IDENTIFIER ::= { policy 1 }
     authorized-association-policy           OBJECT IDENTIFIER ::= { policy 2 }
     default-access-policy                   OBJECT IDENTIFIER ::= { policy 3 }
-    unauthenticated-device-policy           OBJECT IDENTIFIER ::= { policy 4 }
-    unauthorized-association-policy         OBJECT IDENTIFIER ::= { policy 5 }
+    device-authentication-policy            OBJECT IDENTIFIER ::= { policy 4 }
+    device-certificate-validation-policy    OBJECT IDENTIFIER ::= { policy 5 }
+    unauthorized-association-policy         OBJECT IDENTIFIER ::= { policy 6 }
+    routing-policy                          OBJECT IDENTIFIER ::= { policy 7 }
 
     entity                                  OBJECT IDENTIFIER ::= { AuthorizationManagementProtocol 3 }
     authority                               OBJECT IDENTIFIER ::= { entity 0 }
