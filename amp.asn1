@@ -256,6 +256,17 @@ DEFINITIONS ::= BEGIN
         attributeCertificateIssuer      [0] DistinguishedName,  -- for use to ask for a chain leading up to an Attribute Certificate
         identityCertificateSubject      [1] DistinguishedName   -- for use to ask for a chain leading up to an Identity Certificate
     }
+
+    CertificateStatusRequest ::= SEQUENCE {
+        issuerNameHash                      Hash,               -- hash of the issuer's distinguished name as taken from the certificate
+        certificateID                       INTEGER             -- serial number of the certificate taken from the certificate
+    }
+    
+    CertificateStatusResponse ::= SEQUENCE {
+        issuerNameHash                      Hash,               -- hash of the issuer's distinguished name as taken from the certificate
+        certificateID                       INTEGER,            -- serial number of the certificate taken from the certificate
+        certificateStatus                   CertificateStatus
+    }
     
     -- Sent by an Authority or a device to convey a certificate, including the chain leading up to it, or its status if it's bad
     CertificateResponse ::= CHOICE {
