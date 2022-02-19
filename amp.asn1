@@ -545,7 +545,7 @@ DEFINITIONS ::= BEGIN
     -- The recommended default is to permit continued communications 
     -- until the Update Key also expires.
     AuthenticationExpirationPolicy ::= SEQUENCE {
-        mayCommunicate                      AuthenticationExpirationCommunicationPolicy,
+        mayCommunicate                      AuthenticationExpirationCommunicationPolicy
     }
     
     -- The certificates used by the device to authenticate the
