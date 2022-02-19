@@ -564,12 +564,12 @@ DEFINITIONS ::= BEGIN
     -- authorized association policy.
     AuthorizedAssociationPolicy ::= SEQUENCE {
         refreshAuthorization                [1] IMPLICIT    AuthorizationRefreshPolicy,
+        refreshAuthorizationInterval        [2] IMPLICIT    INTEGER OPTIONAL,
         -- If authorization refresh requests are recurring,
         -- indicates the interval at which the device should ask,
         -- in seconds. Required if refreshAuthorization is not never(1)
-        refreshTimeout                      [2] IMPLICIT    INTEGER OPTIONAL,
-        refreshAuthorizationInterval        [3] IMPLICIT    INTEGER OPTIONAL
-    }
+        refreshTimeout                      [3] IMPLICIT    INTEGER OPTIONAL
+   }
 
     -- Each Master-Outstation Association has a role, or a set of roles, assigned to it.
     -- These roles are defined in IEC 62351-8. If an association is authorized but does
