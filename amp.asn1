@@ -605,9 +605,9 @@ DEFINITIONS ::= BEGIN
     RoutingPolicy ::= SEQUENCE {
         -- number of seconds between updates
         routingTableUpdatePeriod            INTEGER,
-        -- Number of seconds the entry should be kept in the table
+        -- Number of seconds the table should be deemed valid without updates being received
         -- (should typically be longer than the time between updates)
-        routingTableEntryTTL                INTEGER
+        routingTableTTL                INTEGER
     }
 
 -- ===================================================================
