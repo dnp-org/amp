@@ -591,11 +591,11 @@ DEFINITIONS ::= BEGIN
         -- Indicates when a device should ask for authentication of
         -- the other device (i.e. validate that the certificate has 
         -- not been revoked)
-        requestAuthentication               RequestAuthenticationPolicy,    
+        requestValidation               RequestValidationPolicy,    
         -- If authentication requests are recurring, indicates the
         -- interval at which the device should ask, in seconds.
-        -- Required if requestAuthentication is recurring(2)
-        requestAuthenticationInterval       INTEGER OPTIONAL
+        -- Required if requestValidation is recurring(5)
+        requestValidationInterval       INTEGER OPTIONAL
     }
     
     UnauthorizedAssociationPolicy ::= SEQUENCE {
@@ -688,11 +688,13 @@ DEFINITIONS ::= BEGIN
         routing-table-update(16)
     }
     
-    RequestAuthenticationPolicy ::= INTEGER {
+    RequestValidationPolicy ::= INTEGER {
         other(0),
         at-discovery(1),
-        recurring(2),
-        never(3)
+        at-association(2),
+        at-session-initiation(3),
+        recurring(4),
+        never(5)
     }
     
     RevocationReason ::= INTEGER {
