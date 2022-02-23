@@ -42,7 +42,7 @@ DEFINITIONS ::= BEGIN
         address                             [3] IMPLICIT    Address,
         -- This data shall be random and shall be generated using an SP-800 90A
         -- compliant RNG.
-        challengeData                       [4] IMPLICIT    OCTET STRING SIZE(32),
+        challengeData                       [4] IMPLICIT    OCTET STRING (SIZE(32)),
         payload                             [5]             AMPPDUPayload,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
@@ -275,7 +275,7 @@ DEFINITIONS ::= BEGIN
     }
     
     CertificateRevocations ::= SEQUENCE OF SEQUENCE {
-        issuer                              DistinguisedName,   -- name of the CA we're relaying the revocation from
+        issuer                              DistinguishedName,   -- name of the CA we're relaying the revocation from
         thisUpdate                          UTCTime,            -- copied (and possible converted) from the thisUpdate field from the (intermediate) CA's CRL
         revokedCertificates                 SEQUENCE OF CertificateRevocation
     }
