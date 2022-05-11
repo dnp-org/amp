@@ -103,7 +103,7 @@ DEFINITIONS ::= BEGIN
         associationAuthorizationStatus      [0]     IMPLICIT    
             AssociationAuthorizationStatus,
             -- priority 2
-        deviceStatus                        [1]     IMPLICIT
+        deviceStatus                        [1]     IMPLICIT -- 2022-05-11: check whether we actually need this message
             DeviceStatus,
             -- Challenged, ACK
             -- priority 0
@@ -164,33 +164,55 @@ DEFINITIONS ::= BEGIN
             Extension
     }
     
+    -- Note: for the priorities below, the basic reasoning is this:
+    --       - priority 0 messages will be retried by the device if lost, so if they do
+    --         get lost because of communications issues, that's not an issue
+    --       - priority 1 messages affect communications to devices and the view the authority
+    --         has on the system, but don't have a significant operational or security impact
+    --         if lost
+    --       - priority 2 messages would require the device to retry if lost, which could have
+    --         an operational impact (e.g. an association not being permitted to be set up)
+    --       - priority 3 messages have a security impact if lost
     DeviceMessage ::= CHOICE {
         associationAuthorizationRequest     [0]     IMPLICIT
             AssociationAuthorizationRequest,
+	    -- priority 2
         deviceVerificationRequest           [1]     IMPLICIT
             DeviceVerificationRequest,
+	    -- priority 2
         routingTable                        [2]     IMPLICIT
             RoutingTable,
+	    -- priority 1
         routingTableRequest                 [3]     IMPLICIT
             RoutingTableRequest,
+	    -- priority 1
         routingTableStatus                  [4]     IMPLICIT
             RoutingTableStatus,
+	    -- priority 1
         routingTableStatusRequest           [5]     IMPLICIT
             RoutingTableStatusRequest,
+	    -- priority 1
         routingTableUpdate                  [6]     IMPLICIT
             RoutingTableUpdate,
+	    -- priority 1
         routingTableConfirmation            [7]     IMPLICIT
             RoutingTableConfirmation,
+	    -- priority 0
         routingTableUpdateConfirmation      [8]     IMPLICIT
             RoutingTableUpdateConfirmation,
+	    -- priority 0
         certificateRequest                  [9]
             CertificateRequest,
+	    -- priority 2
         certificateResponse                 [10]
             CertificateResponse,
+	    -- priority of the message being responded to
         challenge                           [11]    IMPLICIT
             Challenge,
+	    -- priority of the message being challenged
         challengeResponse                   [12]    IMPLICIT
             ChallengeResponse,
+	    -- priority of the challenge
         -- Per the 2021-05-21 discussions, the device doesn't need an acknowledgement 
         -- for non-zero-version-number policies, the device will repeat until it gets its
         -- policies overridden by the Authority. For anything else, the policies are
@@ -198,8 +220,10 @@ DEFINITIONS ::= BEGIN
         -- not have received an Ack for a recent change, in which case *it* will repeat.
         policies                            [13]    IMPLICIT
             Policies,
+	    -- priority 0
         acknowlegement                      [14]    IMPLICIT
             Acknowledgement
+	    -- priority of the message being acknowledged
     }
     
 -- ===================================================================
