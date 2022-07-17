@@ -22,7 +22,7 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
     AMPPDU ::= SEQUENCE {
         version                             [0] IMPLICIT    Version,
-        sequenceNumber                      [1] IMPLICIT    INTEGER DEFAULT 0,
+        nonce                               [1] IMPLICIT    OCTET STRING (SIZE(8..32)),
         -- The priority of this message. Higher-priority messages take
         -- precedence over lower-priority ones. This allows intermediate
         -- devices to drop lower-priority messages in favor of higher-
@@ -40,9 +40,6 @@ DEFINITIONS ::= BEGIN
         --       either type of implementation
         priority                            [2] IMPLICIT    INTEGER(0..3) DEFAULT 0,
         address                             [3] IMPLICIT    Address,
-        -- This data shall be random and shall be generated using an SP-800 90A
-        -- compliant RNG.
-        challengeData                       [4] IMPLICIT    OCTET STRING (SIZE(32)),
         payload                             [5]             AMPPDUPayload,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
