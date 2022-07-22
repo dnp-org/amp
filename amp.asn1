@@ -22,7 +22,8 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
     AMPPDU ::= SEQUENCE {
         version                             [0] IMPLICIT    Version,
-        nonce                               [1] IMPLICIT    OCTET STRING (SIZE(32)),
+	-- uuid of this message, used to trace request-response and challenge-response
+        traceId                             [1] IMPLICIT    OCTET STRING (SIZE(16)),
         -- The priority of this message. Higher-priority messages take
         -- precedence over lower-priority ones. This allows intermediate
         -- devices to drop lower-priority messages in favor of higher-
@@ -40,10 +41,10 @@ DEFINITIONS ::= BEGIN
         --       either type of implementation
         priority                            [2] IMPLICIT    INTEGER(0..3) DEFAULT 0,
         address                             [3] IMPLICIT    Address,
-        payload                             [5]             AMPPDUPayload,
+        payload                             [4]             AMPPDUPayload,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
-        signature                           [6] IMPLICIT    Signature
+        signature                           [5] IMPLICIT    Signature
     }
     
 -- ===================================================================
@@ -53,6 +54,11 @@ DEFINITIONS ::= BEGIN
 -- structural types
 -- ===================================================================
     AMPPDUPayload ::= CHOICE {
+        encryptedPayload                    [0] AMPEncryptedPDUPayload,
+        unencryptedPayload                  [1] UnencryptedAuthorityMessage
+    }
+
+    AMPEncryptedPDUPayload ::= SEQUENCE {
         -- Payload is encrypted using an AES-GCM 256 AEAD, using no Additional 
         -- Data. The field contains the encrypted DER-encoded AMPPDUPayload,
         -- including the authentication tag from the AEAD.
@@ -63,12 +69,11 @@ DEFINITIONS ::= BEGIN
         --    static DH or ECDH key, or an ECDSA key that can also be used for 
         --    ECDH (the static ECDH key is preferred).
         -- 2. Using the shared secret derived in step 1, perform an HKDF using  
-        --    the message's challenge data as the nonce. The output of the HKDF
-        --    is the symmetric key used for the AEAD. This shall result in a
-        --    32-octet key.
+        --    the message's nonce. The output of the HKDF is the symmetric key 
+	--    used for the AEAD. This shall result in a 32-octet key.
         -- 3. The AES-GCM IV is set to 0.
-        encryptedPayload                    [0] OCTET STRING,
-        unencryptedPayload                  [1] UnencryptedAuthorityMessage
+        nonce                               [0] IMPLICIT    OCTET STRING (SIZE(32)),
+        payload                             [1] IMPLICIT    OCTET STRING
     }
 
     -- the PDU payload: a top-level choice item
