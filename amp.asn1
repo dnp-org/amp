@@ -22,7 +22,7 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
     AMPPDU ::= SEQUENCE {
         version                             [0] IMPLICIT    Version,
-        nonce                               [1] IMPLICIT    OCTET STRING (SIZE(8..32)),
+        nonce                               [1] IMPLICIT    OCTET STRING (SIZE(32)),
         -- The priority of this message. Higher-priority messages take
         -- precedence over lower-priority ones. This allows intermediate
         -- devices to drop lower-priority messages in favor of higher-
