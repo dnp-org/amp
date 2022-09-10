@@ -22,7 +22,8 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
     AMPPDU ::= SEQUENCE {
         version                             [0] IMPLICIT    Version,
-	-- uuid of this message, used to trace request-response and challenge-response
+	    -- uuid of this message, used to trace request-response and 
+        -- challenge-response
         traceId                             [1] IMPLICIT    OCTET STRING (SIZE(16)),
         -- The priority of this message. Higher-priority messages take
         -- precedence over lower-priority ones. This allows intermediate
@@ -70,7 +71,7 @@ DEFINITIONS ::= BEGIN
         --    ECDH (the static ECDH key is preferred).
         -- 2. Using the shared secret derived in step 1, perform an HKDF using  
         --    the message's nonce. The output of the HKDF is the symmetric key 
-	--    used for the AEAD. This shall result in a 32-octet key.
+	    --    used for the AEAD. This shall result in a 32-octet key.
         -- 3. The AES-GCM IV is set to 0.
         nonce                               [0] IMPLICIT    OCTET STRING (SIZE(32)),
         payload                             [1] IMPLICIT    OCTET STRING
@@ -409,18 +410,23 @@ DEFINITIONS ::= BEGIN
     }
     
     -- Sent by devices in response to a RoutingTableRequest to convey
-    -- the entire routing table. The routing table may exceed the size
-    -- of an AMP PDU (which has to fit in an SPDU, which 
-    -- maybe as small as 254 bytes), so it may be sent in several
-    -- "chunks" with the "moreFollows" bit set on each but the last
-    -- PDU. The table version starts at 0 and is incremented every
-    -- time an entry is added to, or removed from, the device's
-    -- table. Thus, other devices can verify whether the table has
-    -- changed by reading the table version (conveyed in the
-    -- RoutingTableStatus message).
+    -- the entire routing table.
+    -- The routing table may exceed the size of an AMP PDU (which has
+    -- to fit in an SPDU, which maybe as small as 254 bytes), so it
+    -- may be sent in several "chunks" with the "moreFollows" bit set
+    -- on each but the last PDU. The table version starts at 0 and is
+    -- incremented every time an entry is visibly added to, modified
+    -- in, or removed from, the device's table. Thus, other devices
+    -- can verify whether the table has changed by reading the table
+    -- version (conveyed in the RoutingTableStatus message). Changes
+    -- to the table are considered “visible” if they are communicated
+    -- to the peer device (i.e. the Master or the Authority). Internal
+    -- changes to the routing table shall not be reflected in the
+    -- communicated version.
     -- Entries in the table have no particular order.
     RoutingTable ::= SEQUENCE {
         tableVersion                        INTEGER,
+        sequenceNumber                      INTEGER,
         routingTable                        SET OF RoutingTableEntry,
         -- in case the routing table exceeds to maximum size of
         -- an AMP PDU
@@ -430,9 +436,10 @@ DEFINITIONS ::= BEGIN
     -- Sent by a device or an Authority to acknowledge receipt of
     -- part of the routing table, so the next message can be sent
     -- by the device.
-    RoutingTableConfirmation ::= SEQUENCE {
-        sequenceNumber                      INTEGER
-    }
+    -- The AMPPDU's traceId shall match the traceId of the message
+    -- being acknowledged. Other than that, this message has no
+    -- payload.
+    RoutingTableConfirmation ::= INTEGER
     
     -- Request to read the routing table. If the entire table is
     -- read (operation == read) the tableVersion field shall not
@@ -496,6 +503,7 @@ DEFINITIONS ::= BEGIN
     -- events shall be reported in order (such as to prevent the ABA
     -- problem).
     RoutingTableUpdate ::= SEQUENCE {
+        sequenceNumber                      INTEGER,
         operation                           RoutingTableUpdateOperation,
         entries                             SET OF RoutingTableEntry,
         tableVersion                        INTEGER,
@@ -503,10 +511,12 @@ DEFINITIONS ::= BEGIN
     }
     
     -- Sent by a device or an Authority to acknowledge receipt of
-    -- an update, so the next message can be sent by the device.
-    RoutingTableUpdateConfirmation ::= SEQUENCE {
-        sequenceNumber                      INTEGER
-    }
+    -- part of a routing table update, so the next message can be sent
+    -- by the device.
+    -- The AMPPDU's traceId shall match the traceId of the message
+    -- being acknowledged. Other than that, this message has no
+    -- payload.
+    RoutingTableUpdateConfirmation ::= INTEGER
     
 -- ===================================================================
 -- supporting types
