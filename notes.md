@@ -1,3 +1,9 @@
+Notes from the 2022-11-04 meeting
+===
+* need to decide whether we want ... in our syntax
+* need to specify how cert validation works if you don’t have a clock (fails if not configured to trust)
+* need to make sure AMP can tell the device to trust other devices by policy
+
 Parsing an AMPPDU
 =================
 1. validate the `version` field (type, length and value): it should correspond to the ASN.1 syntax's version (which, when the official version is out, will be `1`. If absent, it may be assumed to be valid but if present, it shall correspond to a version the implementation supports.
