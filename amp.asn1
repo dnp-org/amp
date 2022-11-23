@@ -45,7 +45,8 @@ DEFINITIONS ::= BEGIN
         payload                             [4]             AMPPDUPayload,
         -- all messages are signed by the sender. Devices from the Authority have their
         -- signatures verified at every hop.
-        signature                           [5] IMPLICIT    Signature
+	-- optional for certificate chain messages
+        signature                           [5] IMPLICIT    Signature OPTIONAL
     }
     
 -- ===================================================================
@@ -56,7 +57,8 @@ DEFINITIONS ::= BEGIN
 -- ===================================================================
     AMPPDUPayload ::= CHOICE {
         encryptedPayload                    [0] AMPEncryptedPDUPayload,
-        unencryptedPayload                  [1] UnencryptedAuthorityMessage
+        unencryptedPayload                  [1] UnencryptedAuthorityMessage,
+	certificateChain                    [2] CertificateChain
     }
 
     AMPEncryptedPDUPayload ::= SEQUENCE {
