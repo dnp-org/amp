@@ -582,7 +582,7 @@ DEFINITIONS ::= BEGIN
     -- of the peer expires.
     -- The recommended default is to permit continued communications 
     -- until the Update Key also expires.
-    AuthenticationExpirationPolicy ::= SEQUENCE {
+    PermitCommunicationsOnAuthenticationExpirationPolicy ::= SEQUENCE {
         mayCommunicate                      AuthenticationExpirationCommunicationPolicy
     }
     
@@ -782,15 +782,15 @@ DEFINITIONS ::= BEGIN
     master-event                            OBJECT IDENTIFIER ::= { event 1 }
     outstation-event                        OBJECT IDENTIFIER ::= { event 2 }
 	
-    policy                                  OBJECT IDENTIFIER ::= { authorization-management-protocol 2 }
-    authentication-expiration-policy        OBJECT IDENTIFIER ::= { policy 0 }
-    authority-signature-verification-policy OBJECT IDENTIFIER ::= { policy 1 }
-    authorized-association-policy           OBJECT IDENTIFIER ::= { policy 2 }
-    default-access-policy                   OBJECT IDENTIFIER ::= { policy 3 }
-    device-authentication-policy            OBJECT IDENTIFIER ::= { policy 4 }
-    device-certificate-validation-policy    OBJECT IDENTIFIER ::= { policy 5 }
-    unauthorized-association-policy         OBJECT IDENTIFIER ::= { policy 6 }
-    routing-policy                          OBJECT IDENTIFIER ::= { policy 7 }
+    policy                                                      OBJECT IDENTIFIER ::= { authorization-management-protocol 2 }
+    permit-communications-on-authentication-expiration-policy   OBJECT IDENTIFIER ::= { policy 0 }
+    authority-signature-verification-policy                     OBJECT IDENTIFIER ::= { policy 1 }
+    authorized-association-policy                               OBJECT IDENTIFIER ::= { policy 2 }
+    default-access-policy                                       OBJECT IDENTIFIER ::= { policy 3 }
+    device-authentication-policy                                OBJECT IDENTIFIER ::= { policy 4 }
+    device-certificate-validation-policy                        OBJECT IDENTIFIER ::= { policy 5 }
+    unauthorized-association-policy                             OBJECT IDENTIFIER ::= { policy 6 }
+    routing-policy                                              OBJECT IDENTIFIER ::= { policy 7 }
 
     entity                                  OBJECT IDENTIFIER ::= { authorization-management-protocol 3 }
     authority                               OBJECT IDENTIFIER ::= { entity 0 }
