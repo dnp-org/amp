@@ -58,7 +58,7 @@ DEFINITIONS ::= BEGIN
     AMPPDUPayload ::= CHOICE {
         encryptedPayload                    [0] AMPEncryptedPDUPayload,
         unencryptedPayload                  [1] UnencryptedAuthorityMessage,
-	certificateChain                    [2] CertificateChain
+        certificateChain                    [2] CertificateChain
     }
 
     AMPEncryptedPDUPayload ::= SEQUENCE {
