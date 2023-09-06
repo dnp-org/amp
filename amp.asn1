@@ -285,6 +285,11 @@ DEFINITIONS ::= BEGIN
 
     CertificateStatusRequest ::= SEQUENCE {
         issuerNameHash                      Hash,               -- hash of the issuer's distinguished name as taken from the certificate
+                                                                -- NOTE: This is a hash of the complete DER-encoded Distinguished Name 
+                                                                --       as it appears in the encoded X.509 certificate. For 
+                                                                --       interoperability, if possible, this should not be re-encoded.
+                                                                --       The calculation of the hash should start at the first octet
+                                                                --       of the SEQUENCE encoding of the Distinguished Name.
         certificateID                       INTEGER             -- serial number of the certificate taken from the certificate
     }
     
