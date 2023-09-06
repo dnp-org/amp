@@ -133,20 +133,17 @@ DEFINITIONS ::= BEGIN
         certificateResponse                 [8]
             CertificateResponse,
             -- priority 0
-        challenge                           [9]    IMPLICIT
-            Challenge,
-            -- priority 0
-        challengeResponse                   [10]    IMPLICIT
+        challengeResponse                   [9]    IMPLICIT
             ChallengeResponse,
             -- priority 0
-        policies                            [11]    IMPLICIT
+        policies                            [10]    IMPLICIT
             Policies, -- ACK, Challenged
             -- priority 0
-        authorityCertificate                [12]    IMPLICIT
+        authorityCertificate                [11]    IMPLICIT
             AuthorityCertificate,
             -- ACK, Challenge, priority 
             -- priority 0
-        deviceCertificate                   [13]    IMPLICIT
+        deviceCertificate                   [12]    IMPLICIT
             DeviceCertificate
             -- ACK, Challenge
             -- priority 0
