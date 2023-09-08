@@ -248,14 +248,11 @@ DEFINITIONS ::= BEGIN
     -- not verify
     -- The Device shall initiate this request if its policies require
     -- it to do so.
-    -- The peerFingerprint is the fingerprint of the certificate of the
-    -- other device in the Association.
     -- the associationAttributeHash is a hash of the attribute certificate 
     -- that describes the association, if available. Devices that have this
     -- information SHALL include the hash in the authorization request.
     AssociationAuthorizationRequest ::= SEQUENCE {
         associationName                     AssociationName,
-        peerFingerprint                     Fingerprint,
         associationAttributeHash            Hash OPTIONAL
     }
     
