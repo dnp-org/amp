@@ -323,7 +323,7 @@ DEFINITIONS ::= BEGIN
     -- Broadcast by the Authority to all devices to let them know a
     -- device has been revoked for some reason
     DeviceRevocation ::= SEQUENCE {
-        deviceCommonName                    CommonName,
+        deviceDistinguishedName             DistinguishedName,
         reason                              RevocationReason,
         reasonString                        UTF8String OPTIONAL
     }
@@ -331,7 +331,7 @@ DEFINITIONS ::= BEGIN
     -- Sent by the Authority to indicate the status of a device,
     -- unsolicited
     DeviceStatus ::= SEQUENCE {
-        deviceCommonName                    CommonName,
+        deviceDistinguishedName             DistinguishedName,
         status                              SET OF DeviceVerificationStatus
     }
     
@@ -532,9 +532,11 @@ DEFINITIONS ::= BEGIN
         sourceName                          [1] IMPLICIT DistinguishedName
     }
 
+    -- NOTE: The distinguished names in this object shall contain the common 
+    --       name (i.e. they are not relative distinguished names)
     AssociationName ::= SEQUENCE {
-        masterCommonName                    CommonName,
-        outstationCommonName                CommonName,
+        masterDistinguishedName             DistinguishedName,
+        outstationDistinguishedName         DistinguishedName,
         aid                                 INTEGER OPTIONAL,
         all                                 BOOLEAN OPTIONAL
     }
@@ -547,6 +549,9 @@ DEFINITIONS ::= BEGIN
     }
     
     -- CommonName from the certificate, must be system-wide unique
+    -- NOTE: not used directly in the syntax elsewhere, but the requirement 
+    --       for it to be part of every DistinguishedName and for it to be 
+    --       system-wide unique remains.
     CommonName ::= UTF8String
 
     Fingerprint ::= Hash
