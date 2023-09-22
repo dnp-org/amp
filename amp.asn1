@@ -429,6 +429,7 @@ DEFINITIONS ::= BEGIN
     -- communicated version.
     -- Entries in the table have no particular order.
     RoutingTable ::= SEQUENCE {
+        -- TODO these integers should be bounded
         tableVersion                        INTEGER,
         sequenceNumber                      INTEGER,
         routingTable                        SET OF RoutingTableEntry,
