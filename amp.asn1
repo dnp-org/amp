@@ -107,6 +107,7 @@ DEFINITIONS ::= BEGIN
     AuthorityMessage ::= CHOICE {
         associationAuthorizationStatus      [0]     IMPLICIT    
             AssociationAuthorizationStatus,
+            -- Challenged if spontaneous, ACK if spontaneous
             -- priority 2
         deviceStatus                        [1]     IMPLICIT -- 2022-05-11: check whether we actually need this message
             DeviceStatus,
