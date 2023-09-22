@@ -282,19 +282,21 @@ DEFINITIONS ::= BEGIN
     }
 
     CertificateStatusRequest ::= SEQUENCE {
-        issuerNameHash                      Hash,               -- hash of the issuer's distinguished name as taken from the certificate
+        issuerNameHash                      [0] Hash,               -- hash of the issuer's distinguished name as taken from the certificate
                                                                 -- NOTE: This is a hash of the complete DER-encoded Distinguished Name 
                                                                 --       as it appears in the encoded X.509 certificate. For 
                                                                 --       interoperability, if possible, this should not be re-encoded.
                                                                 --       The calculation of the hash should start at the first octet
                                                                 --       of the SEQUENCE encoding of the Distinguished Name.
-        certificateID                       INTEGER             -- serial number of the certificate taken from the certificate
+        -- NOTE: implicitly tagged (and keep it that way) so the parser can treat the integer as an octet string and keep it unbounded in size - for parsers that don't support integers of more than 64 bits
+        certificateID                       [1] IMPLICIT INTEGER             -- serial number of the certificate taken from the certificate
     }
     
     CertificateStatusResponse ::= SEQUENCE {
-        issuerNameHash                      Hash,               -- hash of the issuer's distinguished name as taken from the certificate
-        certificateID                       INTEGER,            -- serial number of the certificate taken from the certificate
-        certificateStatus                   CertificateStatus
+        issuerNameHash                      [0] Hash,               -- hash of the issuer's distinguished name as taken from the certificate
+        -- NOTE: implicitly tagged (and keep it that way) so the parser can treat the integer as an octet string and keep it unbounded in size - for parsers that don't support integers of more than 64 bits
+        certificateID                       [1] IMPLICIT INTEGER,            -- serial number of the certificate taken from the certificate
+        certificateStatus                   [2] CertificateStatus
     }
     
     -- Sent by an Authority or a device to convey a certificate, including the chain leading up to it, or its status if it's bad
