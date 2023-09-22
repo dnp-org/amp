@@ -307,7 +307,7 @@ DEFINITIONS ::= BEGIN
     
     CertificateRevocations ::= SEQUENCE OF SEQUENCE {
         issuer                              DistinguishedName,   -- name of the CA we're relaying the revocation from
-        thisUpdate                          UTCTime,            -- copied (and possible converted) from the thisUpdate field from the (intermediate) CA's CRL
+        thisUpdate                          UTCTime,             -- copied (and possible converted) from the thisUpdate field from the (intermediate) CA's CRL
         revokedCertificates                 SEQUENCE OF CertificateRevocation
     }
 
