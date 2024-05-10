@@ -128,23 +128,20 @@ DEFINITIONS ::= BEGIN
         routingTableUpdateConfirmation      [6]     IMPLICIT
             RoutingTableUpdateConfirmation,
             -- priority 1
-        certificateRequest                  [7]
-            CertificateRequest,
-            -- priority 0
-        certificateResponse                 [8]
+        certificateResponse                 [7]
             CertificateResponse,
             -- priority 0
-        challengeResponse                   [9]    IMPLICIT
+        challengeResponse                   [8]    IMPLICIT
             ChallengeResponse,
             -- priority 0
-        policies                            [10]    IMPLICIT
+        policies                            [9]    IMPLICIT
             Policies, -- ACK, Challenged
             -- priority 0
-        authorityCertificate                [11]    IMPLICIT
+        authorityCertificate                [10]    IMPLICIT
             AuthorityCertificate,
             -- ACK, Challenge, priority 
             -- priority 0
-        deviceCertificate                   [12]    IMPLICIT
+        deviceCertificate                   [11]    IMPLICIT
             DeviceCertificate
             -- ACK, Challenge
             -- priority 0
