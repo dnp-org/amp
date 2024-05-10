@@ -109,41 +109,38 @@ DEFINITIONS ::= BEGIN
             AssociationAuthorizationStatus,
             -- Challenged if spontaneous, ACK if spontaneous
             -- priority 2
-        deviceStatus                        [1]     IMPLICIT -- 2022-05-11: check whether we actually need this message
-            DeviceStatus,
-            -- Challenged, ACK
-            -- priority 0
-        deviceVerificationResponse          [2]     IMPLICIT
-            DeviceVerificationResponse,
-            -- priority 2
-        routingTableRequest                 [3]     IMPLICIT
+        routingTableRequest                 [1]     IMPLICIT
             RoutingTableRequest,
             -- priority 1
-        routingTableStatusRequest           [4]     IMPLICIT
+        routingTableStatusRequest           [2]     IMPLICIT
             RoutingTableStatusRequest,
             -- priority 1
-        routingTableConfirmation            [5]     IMPLICIT
+        routingTableConfirmation            [3]     IMPLICIT
             RoutingTableConfirmation,
             -- priority 1
-        routingTableUpdateConfirmation      [6]     IMPLICIT
+        routingTableUpdateConfirmation      [4]     IMPLICIT
             RoutingTableUpdateConfirmation,
             -- priority 1
-        certificateResponse                 [7]
+        certificateResponse                 [5]
             CertificateResponse,
             -- priority 0
-        challengeResponse                   [8]    IMPLICIT
+        challengeResponse                   [6]    IMPLICIT
             ChallengeResponse,
             -- priority 0
-        policies                            [9]    IMPLICIT
-            Policies, -- ACK, Challenged
+        policies                            [7]    IMPLICIT
+            Policies,
+            -- ACK, Challenged
             -- priority 0
-        authorityCertificate                [10]    IMPLICIT
+        authorityCertificate                [8]    IMPLICIT
             AuthorityCertificate,
             -- ACK, Challenge, priority 
             -- priority 0
-        deviceCertificate                   [11]    IMPLICIT
-            DeviceCertificate
+        deviceCertificate                   [9]    IMPLICIT
+            DeviceCertificate,
             -- ACK, Challenge
+            -- priority 0
+        certificateStatusResponse           [10]    IMPLICIT
+            CertificateStatusResponse
             -- priority 0
     }
 
@@ -154,13 +151,10 @@ DEFINITIONS ::= BEGIN
         hello                               [0]     IMPLICIT
             Hello,
             -- priority 2
-        deviceRevocation                    [1]     IMPLICIT
-            DeviceRevocation,
-            -- ACK, Challenged, priority 3
-        certificateRevocations              [2]     IMPLICIT
+        certificateRevocations              [1]     IMPLICIT
             CertificateRevocations,
             -- ACK, priority 3
-        extendedMessage                     [3]     IMPLICIT
+        extendedMessage                     [2]     IMPLICIT
             Extension
     }
     
@@ -177,40 +171,37 @@ DEFINITIONS ::= BEGIN
         associationAuthorizationRequest     [0]     IMPLICIT
             AssociationAuthorizationRequest,
 	    -- priority 2
-        deviceVerificationRequest           [1]     IMPLICIT
-            DeviceVerificationRequest,
-	    -- priority 2
-        routingTable                        [2]     IMPLICIT
+        routingTable                        [1]     IMPLICIT
             RoutingTable,
 	    -- priority 1
-        routingTableRequest                 [3]     IMPLICIT
+        routingTableRequest                 [2]     IMPLICIT
             RoutingTableRequest,
 	    -- priority 1
-        routingTableStatus                  [4]     IMPLICIT
+        routingTableStatus                  [3]     IMPLICIT
             RoutingTableStatus,
 	    -- priority 1
-        routingTableStatusRequest           [5]     IMPLICIT
+        routingTableStatusRequest           [4]     IMPLICIT
             RoutingTableStatusRequest,
 	    -- priority 1
-        routingTableUpdate                  [6]     IMPLICIT
+        routingTableUpdate                  [5]     IMPLICIT
             RoutingTableUpdate,
 	    -- priority 1
-        routingTableConfirmation            [7]     IMPLICIT
+        routingTableConfirmation            [6]     IMPLICIT
             RoutingTableConfirmation,
 	    -- priority 0
-        routingTableUpdateConfirmation      [8]     IMPLICIT
+        routingTableUpdateConfirmation      [7]     IMPLICIT
             RoutingTableUpdateConfirmation,
 	    -- priority 0
-        certificateRequest                  [9]
+        certificateRequest                  [8]
             CertificateRequest,
 	    -- priority 2
-        certificateResponse                 [10]
+        certificateResponse                 [9]
             CertificateResponse,
 	    -- priority of the message being responded to
-        challenge                           [11]    IMPLICIT
+        challenge                           [10]    IMPLICIT
             Challenge,
 	    -- priority of the message being challenged
-        challengeResponse                   [12]    IMPLICIT
+        challengeResponse                   [11]    IMPLICIT
             ChallengeResponse,
 	    -- priority of the challenge
         -- Per the 2021-05-21 discussions, the device doesn't need an acknowledgement 
@@ -218,10 +209,10 @@ DEFINITIONS ::= BEGIN
         -- policies overridden by the Authority. For anything else, the policies are
         -- already set by the Authority, so they're either OK, or the Authority will
         -- not have received an Ack for a recent change, in which case *it* will repeat.
-        policies                            [13]    IMPLICIT
+        policies                            [12]    IMPLICIT
             Policies,
 	    -- priority 0
-        acknowlegement                      [14]    IMPLICIT
+        acknowlegement                      [13]    IMPLICIT
             Acknowledgement
 	    -- priority of the message being acknowledged
     }
@@ -317,24 +308,6 @@ DEFINITIONS ::= BEGIN
 
     DeviceCertificate ::= CertificateChain
 
-    -- Broadcast by the Authority to all devices to let them know a
-    -- device has been revoked for some reason
-    DeviceRevocation ::= SEQUENCE {
-        deviceDistinguishedName             DistinguishedName,
-        reason                              RevocationReason,
-        reasonString                        UTF8String OPTIONAL
-    }
-    
-    -- Sent by the Authority to indicate the status of a device,
-    -- unsolicited
-    DeviceStatus ::= SEQUENCE {
-        deviceDistinguishedName             DistinguishedName,
-        status                              SET OF DeviceVerificationStatus
-    }
-    
-    -- Sent by the Authority in response to a DeviceVerificationRequest
-    DeviceVerificationResponse ::= DeviceStatus
-
     -- Extensions are used by the implementation to extend AMP.
     -- In order be permissible for use with AMP, the following must be true:
     -- - the type field contains a valid OID describing the format of the value
@@ -350,31 +323,6 @@ DEFINITIONS ::= BEGIN
     -- Sent by the Authority when it comes on-line to indicate to devices
     -- that, if they have something to say/ask, now is the time to do it.
     Hello ::= NULL
-    
-    -- Sent by a device to request verification of another device. 
-    -- Possible responses include:
-    -- - unknown certificate
-    --   Authority sends a DeviceVerificationResponse with a
-    --   unknown-certificate status mutually exclusive with all 
-    --   other status bits.
-    -- - verified
-    --   Authority sends a DeviceVerificationResponse with a verified 
-    --   status may be combined with revoked for a valid cert of a
-    --   revoked device
-    -- - revoked
-    --   Authority sends a DeviceVerificationResponse with a revoked
-    --   status. May be combined with verified or verification-failed.
-    --   Indicates the device has been revoked and should therefore 
-    --   not be communicated with
-    -- - verification-failed
-    --   may be combined with revoked for an invalid cert purported
-    --   to be from a revoked device
-    DeviceVerificationRequest ::= SEQUENCE {
-        -- Certificate of the device for which verification is being
-        -- requested. This is the same certificate as used during
-        -- the SAv6 enrolment handshake
-        deviceCertificate                   Certificate
-    }
     
     -- Maintained by devices and sent by the Authority, the policies
     -- determine the behavior of the device is various
@@ -699,25 +647,6 @@ DEFINITIONS ::= BEGIN
         unknown(3)
     }
 
-    DeviceVerificationStatus ::= INTEGER {
-        -- some status other than the following. Should not be used
-        -- except as a place-holder. Shall not be sent over the wire
-        other(0),
-        -- The Authority was presented with an unknown certificate.
-        -- The device is therefore unauthenticated. Whether
-        -- communication with the device is permitted is a local
-        -- policy matter.
-        unknown-certificate(1),
-        -- The device is authentic.
-        verified(2),
-        -- The device is revoked: no communication with it is permitted.    
-        revoked(3),
-        -- Verification of the presented certificate failed. The
-        -- device is unauthenticated. Whether communication with the
-        -- device is permitted is a local policy matter
-        verification-failed(4)
-    }
-    
     ChallengeableMessageType ::= INTEGER {
         -- other(0) shall not be used for the message type. 
         other(0),
