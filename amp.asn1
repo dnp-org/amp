@@ -131,10 +131,6 @@ DEFINITIONS ::= BEGIN
             Policies,
             -- ACK, Challenged
             -- priority 0
-        authorityCertificate                [8]    IMPLICIT
-            AuthorityCertificate,
-            -- ACK, Challenge, priority 
-            -- priority 0
         deviceCertificate                   [9]    IMPLICIT
             DeviceCertificate,
             -- ACK, Challenge
@@ -154,7 +150,11 @@ DEFINITIONS ::= BEGIN
         certificateRevocations              [1]     IMPLICIT
             CertificateRevocations,
             -- ACK, priority 3
-        extendedMessage                     [2]     IMPLICIT
+        authorityCertificate                [2]    IMPLICIT
+            AuthorityCertificate,
+            -- ACK, Challenge, priority 
+            -- priority 0
+        extendedMessage                     [3]     IMPLICIT
             Extension
     }
     
