@@ -614,8 +614,6 @@ DEFINITIONS ::= BEGIN
         -- the association is not authorized to exist, but also not
         -- explicitly denied. Whether devices are permitted to
         -- communicate is a local policy matter.
-        -- This state doesn't go over the wire: the Authority cannot 
-        -- give this state.
         unauthorized(2),    
         -- the association is not authorized. Devices shall not
         -- communicate
