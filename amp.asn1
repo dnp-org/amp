@@ -713,6 +713,7 @@ DEFINITIONS ::= BEGIN
     controller-event                        OBJECT IDENTIFIER ::= { event 0 }
     master-event                            OBJECT IDENTIFIER ::= { event 1 }
     outstation-event                        OBJECT IDENTIFIER ::= { event 2 }
+    authority-event                         OBJECT IDENTIFIER ::= { event 3 }
 	
     policy                                                      OBJECT IDENTIFIER ::= { authorization-management-protocol 2 }
     permit-communications-on-authentication-expiration-policy   OBJECT IDENTIFIER ::= { policy 0 }
