@@ -21,6 +21,11 @@ DEFINITIONS ::= BEGIN
 -- the principal type
 -- ===================================================================
     AMPPDU ::= SEQUENCE {
+        -- the tbs is the SEQUENCE that is signed. The signature
+	-- shall be over the full DER encoded SEQUENCE including
+ 	-- the tag and length of the tbs SEQUENCE
+    	tbs SEQUENCE
+         {
         version                             [0] IMPLICIT    Version,
 	    -- uuid of this message, used to trace request-response and 
         -- challenge-response
@@ -42,11 +47,13 @@ DEFINITIONS ::= BEGIN
         --       either type of implementation
         priority                            [2] IMPLICIT    INTEGER(0..3) DEFAULT 0,
         address                             [3] IMPLICIT    Address,
-        payload                             [4]             AMPPDUPayload,
-        -- all messages are signed by the sender. Devices from the Authority have their
-        -- signatures verified at every hop.
-	-- optional for certificate chain messages
-        signature                           [5] IMPLICIT    Signature OPTIONAL
+        payload                             [4]             AMPPDUPayload
+	}
+        -- all messages are signed by the sender. 
+	-- Messages sent from the Authority have their signatures verified 
+  	-- Messages sent by Devices have their signatures verified at the first
+   	-- hop and Authority only
+        signature                           [5] IMPLICIT    Signature
     }
     
 -- ===================================================================
