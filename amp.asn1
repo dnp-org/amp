@@ -758,7 +758,7 @@ DEFINITIONS ::= BEGIN
 
     UserRoleInfo ::= SEQUENCE { -- contains the role information blob
         -- IEC62351 specific parameter
-        userRole                        SEQUENCE SIZE (1..MAX) OF RoleID
+        userRole                        SEQUENCE SIZE (1..MAX) OF RoleID,
         aor                             UTF8String (SIZE(1..64)),
         revision                        INTEGER (0..255),
         roleDefinition                  UTF8String (0..23),
