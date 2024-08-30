@@ -489,9 +489,7 @@ DEFINITIONS ::= BEGIN
     --       name (i.e. they are not relative distinguished names)
     AssociationName ::= SEQUENCE {
         masterDistinguishedName             DistinguishedName,
-        outstationDistinguishedName         DistinguishedName,
-        aid                                 INTEGER OPTIONAL,
-        all                                 BOOLEAN OPTIONAL
+        outstationDistinguishedName         DistinguishedName
     }
 
     Certificate ::= OCTET STRING
